@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #002169;
+  --color-accent: #FCB800;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --font-inter: "Inter", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+}
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #333333;
+  --card: #ffffff;
+  --primary: #002169;
+  --accent: #FCB800;
+  --secondary-bg: #F4F4F4;
+  --border: #EBEBEB;
+  --glow: rgba(0, 33, 105, 0.05);
+}
+
+.dark {
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --card: #1E293B;
+  --primary: #38BDF8;
+  --accent: #FCB800;
+  --secondary-bg: #1E293B;
+  --border: #334155;
+  --glow: rgba(56, 189, 248, 0.1);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+  transition: background-color 0.8s ease, color 0.8s ease;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 dark:bg-black/40 dark:border-white/10;
+  }
+  
+  .glass-dark {
+    @apply bg-black/70 backdrop-blur-xl border border-white/10;
+  }
+
+  .ambient-glow {
+    @apply relative after:absolute after:inset-0 after:z-[-1] after:bg-[radial-gradient(circle_at_50%_50%,var(--glow),transparent_70%)] after:opacity-0 hover:after:opacity-100 after:transition-opacity duration-1000;
+  }
+
+  .luminous-border {
+    @apply relative before:absolute before:inset-0 before:rounded-[inherit] before:p-[1px] before:bg-gradient-to-br before:from-white/20 before:to-transparent before:-z-10 dark:before:from-white/10;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .premium-shadow {
+    @apply shadow-[0_80px_160px_rgba(0,0,0,0.12)] dark:shadow-[0_80px_160px_rgba(0,0,0,0.6)];
+  }
+
+  .text-shadow-gold {
+    text-shadow: 0 0 10px rgba(212,175,55,0.5);
+  }
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #F9F9F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #000;
+  border: 3px solid #F9F9F9;
+  border-radius: 20px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D4AF37;
+}
