@@ -5,9 +5,17 @@ import { formatPrice, cn } from "@/lib/utils"
 import AddProductButton from "./AddProductButton"
 import ExportButton from "@/components/admin/ExportButton"
 
-export default async function AdminProductsPage() {
-  const products = await getProducts()
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams
+  const allProducts = await getProducts()
 
+  const products = q 
+    ? allProducts.filter(p => p.name.toLowerCase().includes(q.toLowerCase()))
+    : allProducts
   return (
     <div className="space-y-8">
       {/* Header Section */}
@@ -47,16 +55,19 @@ export default async function AdminProductsPage() {
 
       {/* Main Table Section */}
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
+        <form action="/admin/products" className="p-6 border-b border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="relative max-w-md w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
             <input
               type="text"
-              placeholder="Search products..."
-              className="w-full bg-gray-50 border-none rounded-xl pl-12 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+              name="q"
+              defaultValue={q}
+              placeholder="Search products by name..."
+              className="w-full bg-gray-50 border-none rounded-xl pl-12 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none"
             />
+            <button type="submit" className="hidden">Search</button>
           </div>
-        </div>
+        </form>
         
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">

@@ -171,43 +171,45 @@ export default async function AdminDashboard() {
          <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col">
             <h3 className="text-lg font-bold text-gray-900 mb-8">Recent Activity</h3>
             <div className="flex-1 space-y-6">
-               <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                       <th className="pb-4">Event</th>
-                       <th className="pb-4">User</th>
-                       <th className="pb-4 text-right">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {orders?.slice(0, 5).map((order) => (
-                      <tr key={order.id} className="group hover:bg-gray-50 transition-colors">
-                        <td className="py-4">
-                           <div className="flex flex-col">
-                              <span className="text-xs font-bold text-gray-900">Order Placed</span>
-                              <span className="text-[9px] text-gray-400 mt-0.5">{new Date(order.created_at).toLocaleDateString()}</span>
-                           </div>
-                        </td>
-                        <td className="py-4">
-                           <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                                 <img src={`https://i.pravatar.cc/100?u=${order.id}`} alt="u" className="h-full w-full object-cover" />
-                              </div>
-                              <span className="text-[11px] font-bold text-gray-700 truncate max-w-[80px]">{order.full_name}</span>
-                           </div>
-                        </td>
-                        <td className="py-4 text-right">
-                           <span className={cn(
-                             "px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest",
-                             order.status === 'delivered' ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
-                           )}>
-                             {order.status}
-                           </span>
-                        </td>
+               <div className="overflow-x-auto w-full">
+                 <table className="w-full text-left border-collapse whitespace-nowrap">
+                    <thead>
+                      <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                         <th className="pb-4">Event</th>
+                         <th className="pb-4">User</th>
+                         <th className="pb-4 text-right">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-               </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {orders?.slice(0, 5).map((order) => (
+                        <tr key={order.id} className="group hover:bg-gray-50 transition-colors">
+                          <td className="py-4 pr-4">
+                             <div className="flex flex-col">
+                                <span className="text-xs font-bold text-gray-900">Order Placed</span>
+                                <span className="text-[9px] text-gray-400 mt-0.5">{new Date(order.created_at).toLocaleDateString()}</span>
+                             </div>
+                          </td>
+                          <td className="py-4 pr-4">
+                             <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 bg-gray-100 rounded-full overflow-hidden border border-gray-200 shrink-0">
+                                   <img src={`https://i.pravatar.cc/100?u=${order.id}`} alt="u" className="h-full w-full object-cover" />
+                                </div>
+                                <span className="text-[11px] font-bold text-gray-700 truncate max-w-[120px]">{order.full_name || order.customer_name || 'Customer'}</span>
+                             </div>
+                          </td>
+                          <td className="py-4 text-right">
+                             <span className={cn(
+                               "px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest",
+                               order.status === 'delivered' ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                             )}>
+                               {order.status || 'pending'}
+                             </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                 </table>
+               </div>
             </div>
             <Link href="/admin/orders" className="mt-8 text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-center gap-2 group transition-all">
                View All Activity <Plus className="h-3 w-3 rotate-45 group-hover:translate-x-0.5 transition-transform" />

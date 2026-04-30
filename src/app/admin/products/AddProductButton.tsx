@@ -128,23 +128,23 @@ export default function AddProductButton() {
           <div className="bg-white w-full max-w-5xl rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in duration-500 flex flex-col max-h-[95vh] border-4 border-white">
             
             {/* 🚀 Header */}
-            <div className="p-10 border-b-4 border-gray-50 flex justify-between items-center bg-gray-50/50">
-              <div className="flex items-center gap-6">
-                <div className="h-16 w-16 bg-[#002169] rounded-3xl flex items-center justify-center text-[#FCB800] shadow-2xl shadow-blue-900/30">
-                   <Package className="h-8 w-8" />
+            <div className="p-6 md:p-10 border-b-4 border-gray-50 flex justify-between items-center bg-gray-50/50">
+              <div className="flex items-center gap-4 md:gap-6">
+                <div className="h-12 w-12 md:h-16 md:w-16 bg-[#002169] rounded-2xl md:rounded-3xl flex items-center justify-center text-[#FCB800] shadow-2xl shadow-blue-900/30 shrink-0">
+                   <Package className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-black text-[#002169] uppercase tracking-tighter">Inventory <span className="text-[#FCB800]">Ingestion</span></h2>
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Register new products and color variants</p>
+                  <h2 className="text-xl md:text-3xl font-black text-[#002169] uppercase tracking-tighter">Inventory <span className="text-[#FCB800]">Ingestion</span></h2>
+                  <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Register new products and color variants</p>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="h-12 w-12 flex items-center justify-center bg-white hover:bg-rose-50 rounded-2xl transition-all border-2 border-gray-100 hover:border-rose-100 group">
-                <X className="h-6 w-6 text-gray-400 group-hover:text-rose-600" />
+              <button onClick={() => setIsOpen(false)} className="h-10 w-10 md:h-12 md:w-12 shrink-0 flex items-center justify-center bg-white hover:bg-rose-50 rounded-xl md:rounded-2xl transition-all border-2 border-gray-100 hover:border-rose-100 group">
+                <X className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-rose-600" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-12 space-y-12 custom-scrollbar bg-white">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-12 space-y-8 md:space-y-12 custom-scrollbar bg-white">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
                 
                 {/* Left: Media & Gallery */}
                 <div className="space-y-10">
@@ -224,7 +224,7 @@ export default function AddProductButton() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <label className="text-[11px] font-black text-[#002169] uppercase tracking-[0.3em] px-2 flex items-center gap-2">
                          <Layers className="h-4 w-4" /> Collection

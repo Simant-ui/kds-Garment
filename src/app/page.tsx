@@ -10,7 +10,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col w-full bg-[#F4F4F4] min-h-screen">
       {/* 🚀 Section 1: Hero Banner */}
-      <section className="relative h-[500px] md:h-[600px] w-full overflow-hidden">
+      <section className="relative min-h-[500px] md:min-h-[600px] py-20 w-full overflow-hidden flex items-center">
         <Image 
           src="https://images.unsplash.com/photo-1555529771-7888783a18d3?q=80&w=2070&auto=format&fit=crop" 
           alt="KDS Garment Factory" 
@@ -18,22 +18,22 @@ export default async function Home() {
           priority
           className="object-cover brightness-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#002169]/90 to-transparent flex items-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#002169]/90 to-[#002169]/40 flex items-center">
           <div className="container mx-auto px-6 space-y-6">
-            <div className="bg-[#FCB800] text-[#002169] px-4 py-1 inline-block rounded font-bold text-xs uppercase tracking-widest">
+            <div className="bg-[#FCB800] text-[#002169] px-4 py-1.5 inline-block rounded font-bold text-xs md:text-sm uppercase tracking-widest shadow-lg">
                Established in 2018 AD
             </div>
-            <h1 className="text-4xl md:text-7xl font-black text-white max-w-2xl leading-tight drop-shadow-2xl">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white max-w-3xl leading-tight drop-shadow-2xl">
               KDS READYMADE UDHYOG <br /> <span className="text-[#FCB800]">GARMENT MANUFACTURER</span>
             </h1>
-            <p className="text-white text-lg md:text-xl max-w-xl font-medium drop-shadow-lg">
+            <p className="text-white/90 text-base md:text-lg max-w-xl font-medium drop-shadow-lg leading-relaxed">
               KDS Readymade Udhyog is Nepal's premier garment manufacturer providing high-quality corporate wear, school uniforms, and custom apparel delivered across Nepal.
             </p>
-            <div className="flex gap-4 pt-4">
-              <Link href="/products" className="bg-[#FCB800] text-[#002169] px-8 py-4 rounded font-bold hover:bg-white transition-all flex items-center gap-2">
+            <div className="flex gap-4 pt-6 flex-wrap">
+              <Link href="/products" className="bg-[#FCB800] text-[#002169] px-6 py-3.5 md:px-8 md:py-4 rounded font-bold hover:bg-white transition-all flex items-center gap-2 shadow-xl hover:-translate-y-1">
                 BROWSE COLLECTION <ArrowRight className="h-5 w-5" />
               </Link>
-              <Link href="/about" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded font-bold hover:bg-white hover:text-[#002169] transition-all">
+              <Link href="/about" className="bg-transparent border-2 border-white text-white px-6 py-3.5 md:px-8 md:py-4 rounded font-bold hover:bg-white hover:text-[#002169] transition-all shadow-xl hover:-translate-y-1">
                 OUR STORY
               </Link>
             </div>
@@ -96,7 +96,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             { title: "CORPORATE WEAR", img: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=2070&auto=format&fit=crop", count: "120+ Items" },
-            { title: "SCHOOL UNIFORMS", img: "https://images.unsplash.com/photo-1503917988258-f19a78767e13?q=80&w=1974&auto=format&fit=crop", count: "80+ Items" },
+            { title: "SCHOOL UNIFORMS", img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop", count: "80+ Items" },
             { title: "CUSTOM PRINTS", img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1974&auto=format&fit=crop", count: "50+ Items" }
           ].map((cat, i) => (
             <Link href="/products" key={i} className="group relative h-[400px] overflow-hidden rounded-xl">

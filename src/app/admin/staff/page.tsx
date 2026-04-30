@@ -45,7 +45,7 @@ export default async function AdminStaffPage() {
                Add New Staff
             </h3>
             
-            <form action={createStaffAction} className="space-y-5">
+            <form action={createStaffAction as unknown as (payload: FormData) => void} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
@@ -162,8 +162,8 @@ export default async function AdminStaffPage() {
                   </div>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto w-full">
+                  <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                       <tr className="bg-gray-50/50">
                         <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Name</th>
@@ -195,7 +195,7 @@ export default async function AdminStaffPage() {
                              </span>
                           </td>
                           <td className="px-8 py-6 text-right">
-                             <form action={deleteStaffAction.bind(null, staff.id)}>
+                             <form action={deleteStaffAction.bind(null, staff.id) as unknown as (payload: FormData) => void}>
                                <button className="p-3 text-gray-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
                                  <Trash2 className="h-4 w-4" />
                                </button>

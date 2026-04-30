@@ -82,7 +82,7 @@ export default function Navbar() {
 
         {/* 🏢 Main Header */}
         <nav className="bg-[#002169] text-white">
-          <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-8">
+          <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-4 xl:gap-8">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 shrink-0">
               <div className="relative h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
@@ -105,7 +105,7 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   className={cn(
-                    "px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded",
+                    "px-2 xl:px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded",
                     pathname === link.href 
                       ? "bg-white/10 text-[#FCB800]"
                       : "text-white hover:bg-white/5 hover:text-[#FCB800]"
@@ -117,7 +117,7 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Search */}
-            <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-sm relative">
+            <form onSubmit={handleSearch} className="hidden lg:flex flex-1 min-w-[150px] max-w-sm relative">
               <input 
                 type="text"
                 value={searchQuery}
