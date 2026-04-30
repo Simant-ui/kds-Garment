@@ -17,7 +17,8 @@ import {
   Package,
   ShoppingCart,
   ArrowLeft,
-  Loader2
+  Loader2,
+  Users
 } from "lucide-react"
 import Link from "next/link"
 
