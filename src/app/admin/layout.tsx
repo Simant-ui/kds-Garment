@@ -20,16 +20,19 @@ import {
   Shield,
   User,
   Menu,
-  X
+  X,
+  Calendar
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { adminLogoutAction } from "@/app/login/actions"
-import { useState } from "react"
 
 const sidebarLinks = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Inventory", href: "/admin/products", icon: Package },
   { name: "POS Billing", href: "/admin/billing", icon: Receipt },
+  { name: "Day Book", href: "/admin/daybook", icon: Calendar },
   { name: "Bills History", href: "/admin/bills", icon: FileText },
   { name: "Inquiries", href: "/admin/inquiries", icon: Users },
   { name: "Customer Support", href: "/admin/support", icon: MessageSquare, badge: "Live" },
@@ -41,6 +44,44 @@ const sidebarLinks = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [staffName, setStaffName] = useState("System Admin")
+  const [staffImage, setStaffImage] = useState<string | null>(null)
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    const supabase = createClient()
+    
+    // Fetch pending orders count
+    const fetchPending = async () => {
+      const { count } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      if (count) setPendingCount(count)
+    }
+    fetchPending()
+
+    const match = document.cookie.match(/(^| )staff_name=([^;]+)/)
+    if (match) {
+      setStaffName(decodeURIComponent(match[2].replace(/\+/g, ' ')))
+    }
+
+    const idMatch = document.cookie.match(/(^| )staff_id=([^;]+)/)
+    if (idMatch) {
+       // fetch staff profile image
+       supabase.from('staff').select('profile_image').eq('id', idMatch[2]).single().then(({ data }) => {
+          if (data?.profile_image) setStaffImage(data.profile_image)
+       })
+    } else {
+       const saved = localStorage.getItem('kds_admin_profile')
+       if (saved) {
+         const profile = JSON.parse(saved)
+         if (profile.first_name) setStaffName(`${profile.first_name} ${profile.last_name}`)
+         if (profile.profile_image) setStaffImage(profile.profile_image)
+       }
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] flex font-sans selection:bg-blue-600 selection:text-white">
@@ -62,7 +103,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg shrink-0">
                 <img src="/logo.png" alt="KDS Logo" className="h-full w-full object-contain" />
              </div>
-             <span className="text-2xl font-bold tracking-tight text-white uppercase">KDS <span className="text-[#60A5FA]">READYMADE UDHYOG</span></span>
+             <div className="flex flex-col">
+                <span className="text-xl font-black tracking-tight text-white uppercase leading-none">KDS</span>
+                <span className="text-[9px] font-black tracking-widest text-[#60A5FA] uppercase mt-1">Readymade Udhyog</span>
+             </div>
           </Link>
           <button className="lg:hidden p-2 text-white/50 hover:text-white" onClick={() => setIsSidebarOpen(false)}>
             <X className="h-6 w-6" />
@@ -91,6 +135,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {link.badge && (
                   <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-[10px] font-bold rounded-md">{link.badge}</span>
                 )}
+                {link.name === "Orders" && pendingCount > 0 && (
+                  <span className="px-2 py-0.5 bg-rose-500/20 text-rose-400 text-[10px] font-bold rounded-md">{pendingCount} Pending</span>
+                )}
               </Link>
             )
           })}
@@ -110,8 +157,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Shield className="h-5 w-5 text-white" />
              </div>
              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold truncate text-white">System Admin</p>
-                <p className="text-[10px] text-white/40 truncate uppercase tracking-widest">Administrator</p>
+                <p className="text-xs font-bold truncate text-white">{staffName}</p>
+                <p className="text-[10px] text-white/40 truncate uppercase tracking-widest">Active Session</p>
              </div>
           </div>
         </div>
@@ -149,12 +196,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="absolute top-1.5 right-1.5 h-3 w-3 bg-rose-500 border-2 border-white rounded-full flex items-center justify-center text-[8px] text-white font-bold">3</span>
               </button>
               <div className="h-8 w-px bg-gray-200" />
-              <div className="flex items-center gap-3 cursor-pointer group">
-                 <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
-                    <User className="h-5 w-5 text-gray-500" />
-                 </div>
-                  <span className="text-sm font-bold text-gray-700 hidden md:block">Admin</span>
-                 <ChevronDown className="h-4 w-4 text-gray-400 group-hover:translate-y-0.5 transition-transform hidden md:block" />
+              <div className="relative">
+                <div 
+                  className="flex items-center gap-3 cursor-pointer group"
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                >
+                   <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 overflow-hidden">
+                      {staffImage ? <img src={staffImage} className="h-full w-full object-cover" alt="Profile" /> : <User className="h-5 w-5 text-gray-500" />}
+                   </div>
+                   <span className="text-sm font-bold text-gray-700 hidden md:block">{staffName}</span>
+                   <ChevronDown className="h-4 w-4 text-gray-400 group-hover:translate-y-0.5 transition-transform hidden md:block" />
+                </div>
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                    <button 
+                      onClick={() => adminLogoutAction()}
+                      className="w-full text-left px-4 py-2 text-sm font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" /> Log Out
+                    </button>
+                  </div>
+                )}
               </div>
            </div>
         </header>

@@ -1,27 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { 
-  Settings, 
-  User, 
-  Bell, 
-  Shield, 
-  CreditCard, 
-  Globe, 
-  Save, 
-  Mail, 
-  Phone, 
-  MapPin,
-  Clock,
-  CheckCircle2,
-  Users,
-  UserPlus,
-  Trash2,
-  Lock,
-  ArrowRight
+  Settings, User, Bell, Shield, CreditCard, Globe, Save, Mail, Phone, MapPin, Clock, CheckCircle2, Users, UserPlus, Trash2, Lock, ArrowRight, Camera
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createStaffAction, deleteStaffAction } from "../staff/actions"
+import { changePasswordAction, updateProfileAction } from "./actions"
 import { createClient } from "@/lib/supabase/client"
 
 export default function AdminSettingsPage() {
@@ -31,7 +16,23 @@ export default function AdminSettingsPage() {
   const [staffMembers, setStaffMembers] = useState<any[]>([])
   const [isLoadingStaff, setIsLoadingStaff] = useState(false)
 
+  // Auth & Profile state
+  const [isAdmin, setIsAdmin] = useState(true)
+  const [profile, setProfile] = useState<any>({ first_name: 'System', last_name: 'Admin', phone: '+977 9855073550', email: 'admin@kdsgarment.com', profile_image: '' })
+  
   const supabase = createClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const match = document.cookie.match(/(^| )staff_id=([^;]+)/)
+    if (match) {
+      setIsAdmin(false)
+      fetchMyProfile(match[2])
+    } else {
+      const saved = localStorage.getItem('kds_admin_profile')
+      if (saved) setProfile(JSON.parse(saved))
+    }
+  }, [])
 
   useEffect(() => {
     if (activeTab === "staff") {
@@ -39,34 +40,27 @@ export default function AdminSettingsPage() {
     }
   }, [activeTab])
 
+  const fetchMyProfile = async (id: string) => {
+    const { data } = await supabase.from('staff').select('*').eq('id', id).single()
+    if (data) {
+      const [first, ...rest] = (data.full_name || "").split(' ')
+      setProfile({
+        ...data,
+        first_name: first || '',
+        last_name: rest.join(' ') || ''
+      })
+    }
+  }
+
   const fetchStaff = async () => {
     setIsLoadingStaff(true)
-    const { data } = await supabase
-      .from('staff')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data } = await supabase.from('staff').select('*').order('created_at', { ascending: false })
     setStaffMembers(data || [])
     setIsLoadingStaff(false)
   }
 
-  const handleSave = () => {
-    setIsSaving(true)
-    setTimeout(() => {
-      setIsSaving(false)
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 3000)
-    }, 1500)
-  }
-
-  const tabs = [
-    { id: "general", name: "General Store", icon: Settings },
-    { id: "staff", name: "Staff Management", icon: Users },
-    { id: "profile", name: "Admin Profile", icon: User },
-    { id: "notifications", name: "Notifications", icon: Bell },
-    { id: "security", name: "Security", icon: Shield },
-  ]
-
   const handleCreateStaff = async (formData: FormData) => {
+    if (!isAdmin) return alert("You do not have permission to add staff.")
     const res = await createStaffAction(formData)
     if (res.success) {
       setShowSuccess(true)
@@ -78,12 +72,74 @@ export default function AdminSettingsPage() {
   }
 
   const handleDeleteStaff = async (id: string) => {
+    if (!isAdmin) return alert("Permission denied.")
     if (!confirm("Are you sure you want to remove this staff member?")) return
     const res = await deleteStaffAction(id)
-    if (res.success) {
-      fetchStaff()
+    if (res.success) fetchStaff()
+  }
+
+  const handleUpdateProfile = async (formData: FormData) => {
+    setIsSaving(true)
+    formData.append("profile_image", profile.profile_image || '')
+    
+    if (isAdmin) {
+      const newProfile = {
+        first_name: formData.get("first_name"),
+        last_name: formData.get("last_name"),
+        phone: formData.get("phone"),
+        email: formData.get("email"),
+        profile_image: profile.profile_image
+      }
+      localStorage.setItem('kds_admin_profile', JSON.stringify(newProfile))
+      setProfile(newProfile)
+      setIsSaving(false)
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
+      // Force refresh to update layout
+      window.location.reload()
+    } else {
+      const res = await updateProfileAction(formData)
+      setIsSaving(false)
+      if (res.success) {
+        setShowSuccess(true)
+        setTimeout(() => setShowSuccess(false), 3000)
+        window.location.reload()
+      } else {
+        alert(res.error)
+      }
     }
   }
+
+  const handleChangePassword = async (formData: FormData) => {
+    setIsSaving(true)
+    const res = await changePasswordAction(formData)
+    setIsSaving(false)
+    if (res.success) {
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
+      alert("Password changed successfully!")
+    } else {
+      alert(res.error)
+    }
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfile({ ...profile, profile_image: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const tabs = [
+    { id: "general", name: "General Store", icon: Settings },
+    ...(isAdmin ? [{ id: "staff", name: "Staff Management", icon: Users }] : []),
+    { id: "profile", name: isAdmin ? "Admin Profile" : "My Profile", icon: User },
+    { id: "security", name: "Security", icon: Shield },
+  ]
 
   return (
     <div className="space-y-8 max-w-6xl">
@@ -99,15 +155,6 @@ export default function AdminSettingsPage() {
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="text-xs font-bold uppercase tracking-widest text-[10px]">Changes Applied</span>
              </div>
-           )}
-           {activeTab === "general" && (
-             <button 
-               onClick={handleSave}
-               disabled={isSaving}
-               className="bg-[#002169] text-white px-8 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
-             >
-                {isSaving ? "Saving..." : <><Save className="h-4 w-4" /> Save Preferences</>}
-             </button>
            )}
         </div>
       </div>
@@ -134,6 +181,8 @@ export default function AdminSettingsPage() {
 
         {/* Content Area */}
         <div className="lg:col-span-3 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden min-h-[600px]">
+           
+           {/* GENERAL TAB */}
            {activeTab === "general" && (
              <div className="p-10 space-y-10 animate-in fade-in duration-500">
                 {/* Store Identity */}
@@ -145,21 +194,13 @@ export default function AdminSettingsPage() {
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-2">
                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Business Name</label>
-                         <input 
-                           type="text" 
-                           defaultValue="KDS Readymade Udhyog" 
-                           className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:border-blue-600 focus:bg-white outline-none transition-all"
-                         />
+                         <input type="text" readOnly defaultValue="KDS Readymade Udhyog" className="w-full bg-gray-100/50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed" />
                       </div>
                       <div className="space-y-2">
                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Support Email</label>
                          <div className="relative">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
-                            <input 
-                              type="email" 
-                              defaultValue="kdsgroup98@gmail.com" 
-                              className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-gray-700 focus:border-blue-600 focus:bg-white outline-none transition-all"
-                            />
+                            <input type="email" readOnly defaultValue="kdsgroup98@gmail.com" className="w-full bg-gray-100/50 border-2 border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed" />
                          </div>
                       </div>
                    </div>
@@ -176,8 +217,9 @@ export default function AdminSettingsPage() {
                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Primary Phone</label>
                          <input 
                            type="text" 
+                           readOnly
                            defaultValue="+977 9855073550" 
-                           className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:border-blue-600 focus:bg-white outline-none transition-all"
+                           className="w-full bg-gray-100/50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed"
                          />
                       </div>
                       <div className="space-y-2">
@@ -186,8 +228,9 @@ export default function AdminSettingsPage() {
                             <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                             <input 
                               type="text" 
+                              readOnly
                               defaultValue="Lalgadh, Nepal" 
-                              className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-gray-700 focus:border-blue-600 focus:bg-white outline-none transition-all"
+                              className="w-full bg-gray-100/50 border-2 border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed"
                             />
                          </div>
                       </div>
@@ -196,7 +239,8 @@ export default function AdminSettingsPage() {
              </div>
            )}
 
-           {activeTab === "staff" && (
+           {/* STAFF TAB */}
+           {activeTab === "staff" && isAdmin && (
              <div className="p-10 space-y-10 animate-in fade-in duration-500">
                 <section className="space-y-8">
                    <div className="flex items-center justify-between border-b border-gray-50 pb-4">
@@ -206,11 +250,12 @@ export default function AdminSettingsPage() {
                       </div>
                    </div>
 
-                   {/* Add Staff Form */}
-                   <div className="bg-gray-50/50 p-8 rounded-3xl border border-gray-100">
+                   {/* Add Staff Form (Disabled if not admin) */}
+                   <div className={cn("bg-gray-50/50 p-8 rounded-3xl border border-gray-100 transition-all", !isAdmin && "opacity-60 grayscale pointer-events-none")}>
                       <h4 className="text-sm font-bold text-gray-900 mb-6 flex items-center gap-2">
                         <UserPlus className="h-4 w-4 text-blue-600" /> Authorize New Member
                       </h4>
+                      {!isAdmin && <p className="text-xs text-rose-500 font-bold mb-4 uppercase tracking-widest">You do not have administrative privileges to create staff.</p>}
                       <form action={handleCreateStaff} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
@@ -237,7 +282,7 @@ export default function AdminSettingsPage() {
                           <input name="confirm_password" type="password" required className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold" />
                         </div>
                         <div className="md:col-span-2 pt-2">
-                          <button type="submit" className="bg-[#002169] text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-blue-700 transition-all">
+                          <button disabled={!isAdmin} type="submit" className="bg-[#002169] text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-50">
                             Create Staff Account <ArrowRight className="h-4 w-4" />
                           </button>
                         </div>
@@ -259,12 +304,14 @@ export default function AdminSettingsPage() {
                           <tbody className="divide-y divide-gray-50">
                             {staffMembers.map((staff) => (
                               <tr key={staff.id} className="group hover:bg-gray-50/50 transition-all">
-                                <td className="px-6 py-4 text-sm font-bold text-gray-700">{staff.first_name} {staff.last_name}</td>
+                                <td className="px-6 py-4 text-sm font-bold text-gray-700">{staff.full_name}</td>
                                 <td className="px-6 py-4 text-xs font-medium text-gray-400">{staff.email}</td>
                                 <td className="px-6 py-4 text-right">
-                                  <button onClick={() => handleDeleteStaff(staff.id)} className="p-2 text-gray-300 hover:text-rose-600 transition-colors">
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
+                                  {isAdmin && (
+                                     <button onClick={() => handleDeleteStaff(staff.id)} className="p-2 text-gray-300 hover:text-rose-600 transition-colors">
+                                       <Trash2 className="h-4 w-4" />
+                                     </button>
+                                  )}
                                 </td>
                               </tr>
                             ))}
@@ -281,18 +328,119 @@ export default function AdminSettingsPage() {
              </div>
            )}
 
-           {activeTab !== "general" && activeTab !== "staff" && (
-             <div className="p-20 text-center space-y-4 animate-in fade-in duration-500">
-                <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto">
-                   <Settings className="h-8 w-8" />
-                </div>
-                <div>
-                   <h3 className="text-lg font-bold text-gray-900">{tabs.find(t => t.id === activeTab)?.name} Settings</h3>
-                   <p className="text-xs text-gray-400 font-medium max-w-xs mx-auto mt-2">These configurations are currently being provisioned for your enterprise suite.</p>
-                </div>
-                <button className="text-blue-600 text-xs font-bold uppercase tracking-widest hover:underline">Request Priority Activation</button>
+           {/* PROFILE TAB */}
+           {activeTab === "profile" && (
+             <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                <section className="space-y-8">
+                   <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                      <User className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{isAdmin ? "Admin Profile" : "Staff Profile"}</h3>
+                   </div>
+                   
+                   <form action={handleUpdateProfile} className="space-y-8">
+                      {/* Photo Upload */}
+                      <div className="flex items-center gap-8">
+                         <div className="relative group">
+                            <div className="h-28 w-28 rounded-full bg-gray-100 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
+                               {profile.profile_image ? (
+                                  <img src={profile.profile_image} alt="Profile" className="h-full w-full object-cover" />
+                               ) : (
+                                  <User className="h-10 w-10 text-gray-400" />
+                               )}
+                            </div>
+                            <button 
+                               type="button"
+                               onClick={() => fileInputRef.current?.click()}
+                               className="absolute bottom-0 right-0 h-8 w-8 bg-blue-600 text-white rounded-full flex items-center justify-center border-2 border-white shadow-lg hover:scale-110 transition-transform"
+                            >
+                               <Camera className="h-4 w-4" />
+                            </button>
+                            <input 
+                               type="file" 
+                               ref={fileInputRef} 
+                               onChange={handleImageUpload} 
+                               accept="image/*" 
+                               className="hidden" 
+                            />
+                         </div>
+                         <div>
+                            <h4 className="text-lg font-black text-gray-900">{profile.first_name} {profile.last_name}</h4>
+                            <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">{isAdmin ? "System Administrator" : "Staff Member"}</p>
+                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">First Name</label>
+                            <input name="first_name" defaultValue={profile.first_name} required className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700" />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Last Name</label>
+                            <input name="last_name" defaultValue={profile.last_name} required className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700" />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Mobile Number</label>
+                            <input name="phone" defaultValue={profile.phone} required className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700" />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Email Address</label>
+                            <input name="email" type="email" defaultValue={profile.email} required className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700" />
+                         </div>
+                      </div>
+
+                      <div className="pt-4">
+                         <button type="submit" disabled={isSaving} className="bg-[#002169] text-white px-8 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+                            {isSaving ? "Saving..." : <><Save className="h-4 w-4" /> Update Profile</>}
+                         </button>
+                      </div>
+                   </form>
+                </section>
              </div>
            )}
+
+           {/* SECURITY TAB */}
+           {activeTab === "security" && (
+             <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                <section className="space-y-8">
+                   <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                      <Lock className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Account Security</h3>
+                   </div>
+                   
+                   {isAdmin ? (
+                      <div className="bg-amber-50 border border-amber-100 p-6 rounded-2xl">
+                         <h4 className="text-sm font-bold text-amber-900 mb-2">System Admin Account</h4>
+                         <p className="text-xs text-amber-700/80 font-medium leading-relaxed">
+                            Because you are logged in as the System Administrator using environment variables, your password is secured at the server level. 
+                            To change your password, please update your `.env` configuration file on the server.
+                         </p>
+                      </div>
+                   ) : (
+                      <form action={handleChangePassword} className="space-y-6 max-w-md">
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Current Password</label>
+                            <input name="current_password" type="password" required className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700" />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">New Password</label>
+                            <input name="new_password" type="password" required className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700" />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Confirm New Password</label>
+                            <input name="confirm_password" type="password" required className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700" />
+                         </div>
+                         
+                         <div className="pt-4">
+                            <button type="submit" disabled={isSaving} className="bg-[#002169] text-white px-8 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+                               {isSaving ? "Updating..." : "Update Password"}
+                            </button>
+                         </div>
+                      </form>
+                   )}
+                </section>
+             </div>
+           )}
+
         </div>
       </div>
     </div>

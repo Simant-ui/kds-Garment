@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { cookies } from "next/headers"
 import { formatPrice, cn } from "@/lib/utils"
 import { 
   TrendingUp, 
@@ -27,34 +28,51 @@ export default async function AdminDashboard() {
     .select('*')
     .order('created_at', { ascending: false })
 
+  const tzOptions = { timeZone: 'Asia/Kathmandu' } as const;
+  const formatDateStr = (d: Date) => new Intl.DateTimeFormat('en-CA', tzOptions).format(d)
+
   // Aggregate sales by day for the last 7 days
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
-    return d.toLocaleDateString()
+    return formatDateStr(d)
   })
 
   const dailyRevenue = last7Days.map(date => {
-    return orders?.filter(o => new Date(o.created_at).toLocaleDateString() === date)
-      .reduce((acc, o) => acc + (o.total_price || 0), 0) || 0
+    return orders?.filter(o => formatDateStr(new Date(o.created_at)) === date)
+      .reduce((acc, o) => acc + (o.total_price || o.total_amount || 0), 0) || 0
   })
 
-  const totalRevenue = orders?.reduce((acc, o) => acc + (o.total_price || 0), 0) || 0
+  const totalRevenue = orders?.reduce((acc, o) => acc + (o.total_price || o.total_amount || 0), 0) || 0
   const totalOrdersCount = orders?.length || 0
   
+  const monthlyRevenue = orders?.filter(o => {
+    const d = new Date(o.created_at)
+    // Convert to Nepal time for accurate monthly filtering
+    const month = parseInt(new Intl.DateTimeFormat('en-CA', { ...tzOptions, month: 'numeric' }).format(d))
+    const year = parseInt(new Intl.DateTimeFormat('en-CA', { ...tzOptions, year: 'numeric' }).format(d))
+    
+    const currentMonth = parseInt(new Intl.DateTimeFormat('en-CA', { ...tzOptions, month: 'numeric' }).format(new Date()))
+    const currentYear = parseInt(new Intl.DateTimeFormat('en-CA', { ...tzOptions, year: 'numeric' }).format(new Date()))
+
+    return month === currentMonth && year === currentYear
+  }).reduce((acc, o) => acc + (o.total_price || o.total_amount || 0), 0) || 0
+
+  const pendingOrdersCount = orders?.filter(o => o.status === 'pending').length || 0
+
   // Calculate max revenue for graph scaling
-  const maxRevenue = Math.max(...dailyRevenue, 1000)
+  const maxRevenue = Math.max(...dailyRevenue, 10)
   const graphPoints = dailyRevenue.map((rev, i) => {
     const x = (i * (1000 / 6))
-    const y = 300 - (rev / maxRevenue * 250)
+    const y = 300 - (rev / maxRevenue * 250) // Map to y-axis height
     return `${x},${y}`
   }).join(' ')
 
   const stats = [
     { label: "Total Revenue", value: formatPrice(totalRevenue), change: "+12.5%", isUp: true, icon: TrendingUp, color: "text-blue-600 bg-blue-50", sparkColor: "#3B82F6" },
     { label: "New Orders", value: totalOrdersCount, change: "+8.2%", isUp: true, icon: ShoppingBag, color: "text-emerald-600 bg-emerald-50", sparkColor: "#10B981" },
-    { label: "Avg. Basket", value: formatPrice(totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0), change: "-1.5%", isUp: false, icon: BarChart3, color: "text-amber-600 bg-amber-50", sparkColor: "#F59E0B" },
-    { label: "Pending Tasks", value: "28", change: "+2.4%", isUp: true, icon: Clock, color: "text-rose-600 bg-rose-50", sparkColor: "#F43F5E" }
+    { label: "Monthly Sales", value: formatPrice(monthlyRevenue), change: "+5.1%", isUp: true, icon: BarChart3, color: "text-amber-600 bg-amber-50", sparkColor: "#F59E0B" },
+    { label: "Pending Orders", value: pendingOrdersCount.toString(), change: "-2.4%", isUp: false, icon: Clock, color: "text-rose-600 bg-rose-50", sparkColor: "#F43F5E" }
   ]
 
   const hour = new Date().getHours()
@@ -63,12 +81,19 @@ export default async function AdminDashboard() {
   else if (hour >= 17 && hour < 21) timeGreeting = "Good evening"
   else if (hour >= 21 || hour < 5) timeGreeting = "Good night"
 
+  const cookieStore = await cookies()
+  let staffName = "Admin"
+  const staffNameCookie = cookieStore.get('staff_name')
+  if (staffNameCookie) {
+    staffName = decodeURIComponent(staffNameCookie.value.replace(/\+/g, ' '))
+  }
+
   return (
     <div className="space-y-10">
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{timeGreeting}, Admin! 👋</h1>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{timeGreeting}, {staffName}! 👋</h1>
           <p className="text-sm text-gray-500 mt-1 font-medium italic">"Every day is a new opportunity to grow KDS Garment"</p>
         </div>
         <div className="flex gap-4">
@@ -160,9 +185,10 @@ export default async function AdminDashboard() {
                </svg>
                
                <div className="flex justify-between mt-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">
-                  {last7Days.map((day, i) => (
-                    <span key={i}>{day.split('/')[1]}/{day.split('/')[0]}</span>
-                  ))}
+                  {last7Days.map((day, i) => {
+                    const parts = day.split('-') // YYYY-MM-DD
+                    return <span key={i}>{parts[1]}/{parts[2]}</span>
+                  })}
                </div>
             </div>
          </div>

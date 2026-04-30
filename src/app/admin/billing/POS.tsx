@@ -29,6 +29,28 @@ interface BillItem {
   subtotal: number
 }
 
+// Helper to convert number to words (Nepali numbering system)
+function numberToWords(num: number): string {
+  if (num === 0) return 'Zero';
+  const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+  const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
+  
+  const inWords = (n: number) => {
+    let strNum = Math.floor(n).toString();
+    if (strNum.length > 9) return 'overflow';
+    let nArray = ('000000000' + strNum).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!nArray) return '';
+    let str = '';
+    str += (nArray[1] != '00') ? (a[Number(nArray[1])] || b[nArray[1][0] as any] + ' ' + a[nArray[1][1] as any]) + 'Crore ' : '';
+    str += (nArray[2] != '00') ? (a[Number(nArray[2])] || b[nArray[2][0] as any] + ' ' + a[nArray[2][1] as any]) + 'Lakh ' : '';
+    str += (nArray[3] != '00') ? (a[Number(nArray[3])] || b[nArray[3][0] as any] + ' ' + a[nArray[3][1] as any]) + 'Thousand ' : '';
+    str += (nArray[4] != '0') ? (a[Number(nArray[4])] || b[nArray[4][0] as any] + ' ' + a[nArray[4][1] as any]) + 'Hundred ' : '';
+    str += (nArray[5] != '00') ? ((str != '') ? 'and ' : '') + (a[Number(nArray[5])] || b[nArray[5][0] as any] + ' ' + a[nArray[5][1] as any]) : '';
+    return str.trim();
+  }
+  return inWords(num) + " Rupees Only";
+}
+
 export default function POSPage() {
   const [products, setProducts] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -49,6 +71,11 @@ export default function POSPage() {
     }
     fetchProducts()
     setInvoiceNumber(`INV-${Math.floor(100000 + Math.random() * 900000)}`)
+
+    const match = document.cookie.match(/(^| )staff_name=([^;]+)/)
+    if (match) {
+      setStaffName(decodeURIComponent(match[2].replace(/\+/g, ' ')))
+    }
   }, [])
 
   const filteredProducts = useMemo(() => {
@@ -317,9 +344,9 @@ export default function POSPage() {
                   <input 
                     type="text" 
                     value={staffName}
-                    onChange={(e) => setStaffName(e.target.value)}
+                    disabled
                     placeholder="Staff Name"
-                    className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                    className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-gray-500 focus:outline-none cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -399,95 +426,95 @@ export default function POSPage() {
               </div>
             </div>
 
-            {/* The Actual Invoice Content */}
-            <div className="flex-1 overflow-y-auto p-12 space-y-12 print:overflow-visible">
-              {/* Branding & Info */}
-              <div className="flex justify-between items-start">
-                <div>
-                   <div className="flex items-center gap-3 mb-4">
-                      <img src="/logo.png" alt="Logo" className="h-12 w-12 object-contain" />
-                      <h1 className="text-2xl font-black text-[#1E3A8A] uppercase tracking-tighter">KDS Garment</h1>
-                   </div>
-                   <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Lalgadh, Nepal</p>
-                   <p className="text-xs text-gray-400 font-medium">+977 9855073550 | kdsgroup98@gmail.com</p>
+            {/* The Actual Invoice Content (Receipt Format) */}
+            <div className="flex-1 overflow-y-auto p-12 print:overflow-visible print-invoice bg-white text-black font-mono">
+              <div className="relative text-center space-y-1 mb-6">
+                <div className="absolute top-0 left-0">
+                   <img src="/logo.png" alt="KDS Logo" className="h-16 w-16 object-contain filter grayscale" />
                 </div>
-                <div className="text-right">
-                   <h2 className="text-4xl font-black text-gray-200 uppercase tracking-tighter mb-4">Invoice</h2>
-                   <div className="space-y-1">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Invoice Number</p>
-                      <p className="text-sm font-black text-gray-900">{invoiceNumber}</p>
-                   </div>
-                   <div className="mt-4 space-y-1">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Date & Time</p>
-                      <p className="text-sm font-bold text-gray-900">{new Date().toLocaleString()}</p>
-                   </div>
+                <h1 className="text-2xl font-black tracking-widest uppercase ml-16">KDS Garment</h1>
+                <p className="text-sm ml-16">Lalgadh, Nepal</p>
+                <p className="text-xs text-gray-500 mt-2">Copy: 1 | Printed: {new Date().toLocaleString()}</p>
+              </div>
+
+              <div className="border-t-2 border-black my-4" />
+
+              <h2 className="text-center text-xl tracking-[0.2em] mb-6">ESTIMATED BILL</h2>
+
+              <div className="bg-gray-100 p-4 flex justify-between text-sm mb-6">
+                <div className="space-y-1">
+                   <p><span className="font-bold">Bill To:</span> {customer.name || 'N/A'}</p>
+                   <p><span className="font-bold">Phone:</span> {customer.phone || '-------'}</p>
+                </div>
+                <div className="text-right space-y-1">
+                   <p><span className="font-bold">Bill #:</span> {invoiceNumber}</p>
+                   <p><span className="font-bold">Date:</span> {new Date().toLocaleDateString('en-CA')}</p>
                 </div>
               </div>
 
-              {/* Customer & Staff Info */}
-              <div className="grid grid-cols-2 gap-10 py-10 border-y border-gray-100">
-                <div>
-                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Billed To</p>
-                  <h4 className="text-lg font-bold text-gray-900">{customer.name || 'Walk-in Customer'}</h4>
-                  <p className="text-sm text-gray-500 font-medium mt-1">{customer.phone || 'Contact not provided'}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Payment & Staff</p>
-                  <p className="text-sm font-bold text-gray-900">Payment: <span className="text-blue-600">{paymentMethod}</span></p>
-                  <p className="text-sm font-bold text-gray-900 mt-1">Processed By: {staffName}</p>
-                </div>
-              </div>
-
-              {/* Itemized List */}
-              <div className="overflow-x-auto w-full">
-                <table className="w-full text-left whitespace-nowrap min-w-[500px]">
-                  <thead>
-                    <tr className="border-b-2 border-gray-900/5">
-                      <th className="py-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Description</th>
-                      <th className="py-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Price</th>
-                      <th className="py-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Qty</th>
-                      <th className="py-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Subtotal</th>
+              <table className="w-full text-sm text-left mb-6 border-collapse">
+                <thead className="bg-[#4a4a4a] text-white">
+                  <tr>
+                    <th className="py-2 px-3 font-bold">Description</th>
+                    <th className="py-2 px-3 font-bold text-center">Qty</th>
+                    <th className="py-2 px-3 font-bold text-right">Rate</th>
+                    <th className="py-2 px-3 font-bold text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.map((item, i) => (
+                    <tr key={i} className="border-b border-gray-200">
+                       <td className="py-3 px-3">{item.name}</td>
+                       <td className="py-3 px-3 text-center">{item.quantity}</td>
+                       <td className="py-3 px-3 text-right">Rs. {item.price.toFixed(2)}</td>
+                       <td className="py-3 px-3 text-right">Rs. {item.subtotal.toFixed(2)}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {cart.map((item, i) => (
-                      <tr key={i}>
-                        <td className="py-6 font-bold text-gray-900 text-sm">{item.name}</td>
-                        <td className="py-6 text-center font-medium text-gray-500 text-sm">{formatPrice(item.price)}</td>
-                        <td className="py-6 text-center font-black text-gray-900 text-sm">{item.quantity}</td>
-                        <td className="py-6 text-right font-black text-gray-900 text-sm">{formatPrice(item.subtotal)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
 
-              {/* Calculations */}
-              <div className="flex justify-end pt-10">
-                <div className="w-72 space-y-4">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">Taxable Amount</span>
-                    <span className="font-bold text-gray-900">{formatPrice(subtotal)}</span>
+              <div className="flex justify-end mb-6 text-sm">
+                <div className="w-64 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="font-bold">Subtotal:</span>
+                    <span>Rs. {subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">VAT (13%)</span>
-                    <span className="font-bold text-gray-900">{formatPrice(vat)}</span>
+                  <div className="flex justify-between border-b border-gray-300 pb-2">
+                    <span className="font-bold">Discount:</span>
+                    <span>Rs. 0.00</span>
                   </div>
-                  <div className="h-px bg-gray-100 my-4" />
-                  <div className="flex justify-between items-center">
-                    <span className="font-black text-[#1E3A8A] uppercase tracking-widest text-xs">Grand Total</span>
-                    <span className="text-3xl font-black text-gray-900">{formatPrice(total)}</span>
+                  <div className="flex justify-between font-black text-base pt-2 border-b-2 border-black pb-2">
+                    <span>Total:</span>
+                    <span>Rs. {total.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between mt-2">
+                    <span className="font-bold">Tendered:</span>
+                    <span>Rs. {total.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-bold">Change:</span>
+                    <span>Rs. 0.00</span>
                   </div>
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="pt-20 text-center space-y-4">
-                 <div className="inline-block p-4 bg-gray-50 rounded-2xl">
-                    <p className="text-sm font-black text-gray-900 tracking-tight">Thank you for shopping with us! 👋</p>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Please visit again</p>
-                 </div>
-                 <p className="text-[10px] text-gray-300 font-medium uppercase tracking-[0.3em]">Computer Generated Invoice - No Signature Required</p>
+              <div className="bg-gray-100 p-4 text-sm mb-6">
+                 <span className="font-bold">Amount in words:</span> {numberToWords(total)}
+              </div>
+
+              <div className="text-sm mb-10 space-y-1">
+                 <p className="font-bold">Payment Method:</p>
+                 <p>• {paymentMethod.toUpperCase()}: Rs. {total.toFixed(2)}</p>
+              </div>
+
+              <div className="flex justify-between text-sm border-t border-gray-300 pt-4 mb-8">
+                 <p><span className="font-bold">Cashier:</span> {staffName}</p>
+                 <p><span className="font-bold">Items:</span> {cart.length}</p>
+              </div>
+
+              <div className="text-center text-xs italic text-gray-500 space-y-1 pb-4">
+                 <p>Thank you for visiting us!</p>
+                 <p className="not-italic">KDS Garment • Lalgadh • Tel: +977 9855073550</p>
               </div>
             </div>
           </div>

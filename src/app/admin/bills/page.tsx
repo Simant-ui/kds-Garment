@@ -23,6 +23,8 @@ export default function BillsHistoryPage() {
   const [bills, setBills] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
   const [selectedBill, setSelectedBill] = useState<any | null>(null)
   const [showModal, setShowModal] = useState(false)
   const supabase = createClient()
@@ -47,11 +49,22 @@ export default function BillsHistoryPage() {
     fetchBills()
   }, [])
 
-  const filteredBills = bills.filter(bill => 
-    (bill.tracking_id?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (bill.full_name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (bill.phone?.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredBills = bills.filter(bill => {
+    const matchesSearch = (bill.tracking_id?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (bill.full_name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (bill.phone?.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    let matchesDate = true;
+    const billDate = new Date(bill.created_at).getTime()
+    if (startDate) {
+      matchesDate = matchesDate && billDate >= new Date(`${startDate}T00:00:00`).getTime()
+    }
+    if (endDate) {
+      matchesDate = matchesDate && billDate <= new Date(`${endDate}T23:59:59`).getTime()
+    }
+
+    return matchesSearch && matchesDate;
+  })
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -70,14 +83,29 @@ export default function BillsHistoryPage() {
 
       {/* Search & Filter Bar */}
       <div className="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center">
-         <div className="relative flex-1 w-full">
+         <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input 
               type="text" 
-              placeholder="Search by Invoice ID, Customer Name, or Phone..." 
+              placeholder="Search Invoice or Name..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-50 border-none rounded-2xl pl-16 pr-6 py-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+         </div>
+         <div className="flex-1 flex gap-2">
+            <input 
+              type="date" 
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="flex-1 bg-gray-50 border-none rounded-2xl px-4 py-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+            <span className="flex items-center text-gray-400 font-bold">to</span>
+            <input 
+              type="date" 
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="flex-1 bg-gray-50 border-none rounded-2xl px-4 py-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 transition-all"
             />
          </div>
          <div className="flex gap-2">
@@ -199,7 +227,7 @@ export default function BillsHistoryPage() {
 
       {/* Invoice Modal */}
       {(showModal && selectedBill) && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/80 backdrop-blur-md p-4 print:p-0 print:static print:bg-white">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/80 backdrop-blur-md p-4 print:p-0 print:static print:bg-white print-invoice">
            <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] print:max-h-none print:shadow-none print:rounded-none">
               <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 print:hidden">
                  <h2 className="text-xl font-bold text-gray-900">Bill Details</h2>

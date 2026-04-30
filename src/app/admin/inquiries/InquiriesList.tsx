@@ -30,8 +30,13 @@ export default function InquiriesList({ initialInquiries }: { initialInquiries: 
       setInquiries(inquiries.map(inv => 
         inv.id === selectedInquiry.id ? { ...inv, status: 'responded' } : inv
       ))
+      
+      alert(result.success)
+      
       setSelectedInquiry(null)
       setReplyMessage('')
+    } else if (result.error) {
+      alert(result.error)
     }
     setIsSubmitting(false)
   }

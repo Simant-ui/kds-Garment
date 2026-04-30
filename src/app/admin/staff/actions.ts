@@ -27,7 +27,10 @@ export async function createStaffAction(formData: FormData) {
   const { error } = await supabase
     .from('staff')
     .insert([{ 
+      first_name,
+      last_name,
       full_name: `${first_name} ${last_name}`,
+      phone,
       email, 
       password,
       role: 'staff',

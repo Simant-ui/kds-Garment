@@ -17,14 +17,14 @@ const reportModules = [
   { 
     name: "Day Book", 
     icon: BookText, 
-    href: "/admin/reports/day-book", 
+    href: "/admin/daybook", 
     color: "bg-teal-50 text-teal-600",
     description: "Daily transaction journal and cash flow"
   },
   { 
     name: "Sales", 
     icon: TrendingUp, 
-    href: "/admin/reports/sales", 
+    href: "/admin/bills", 
     color: "bg-blue-50 text-blue-600",
     description: "Detailed sales analysis and revenue tracking"
   },

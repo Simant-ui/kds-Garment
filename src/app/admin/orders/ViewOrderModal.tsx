@@ -6,6 +6,27 @@ import { formatPrice, cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
+function numberToWords(num: number): string {
+  if (num === 0) return 'Zero';
+  const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+  const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
+  
+  const inWords = (n: number) => {
+    let strNum = Math.floor(n).toString();
+    if (strNum.length > 9) return 'overflow';
+    let nArray = ('000000000' + strNum).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!nArray) return '';
+    let str = '';
+    str += (nArray[1] != '00') ? (a[Number(nArray[1])] || b[nArray[1][0] as any] + ' ' + a[nArray[1][1] as any]) + 'Crore ' : '';
+    str += (nArray[2] != '00') ? (a[Number(nArray[2])] || b[nArray[2][0] as any] + ' ' + a[nArray[2][1] as any]) + 'Lakh ' : '';
+    str += (nArray[3] != '00') ? (a[Number(nArray[3])] || b[nArray[3][0] as any] + ' ' + a[nArray[3][1] as any]) + 'Thousand ' : '';
+    str += (nArray[4] != '0') ? (a[Number(nArray[4])] || b[nArray[4][0] as any] + ' ' + a[nArray[4][1] as any]) + 'Hundred ' : '';
+    str += (nArray[5] != '00') ? ((str != '') ? 'and ' : '') + (a[Number(nArray[5])] || b[nArray[5][0] as any] + ' ' + a[nArray[5][1] as any]) : '';
+    return str.trim();
+  }
+  return inWords(num) + " Rupees Only";
+}
+
 export default function ViewOrderModal({ order: initialOrder }: { order: any }) {
   const [isOpen, setIsOpen] = useState(false)
   const [order, setOrder] = useState(initialOrder)
@@ -77,11 +98,11 @@ export default function ViewOrderModal({ order: initialOrder }: { order: any }) 
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[95vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm print:p-0 print:static print:bg-transparent">
+          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[95vh] print:hidden">
             
             {/* Header Section */}
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white">
+            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white print:hidden">
               <div className="flex items-center gap-6">
                 <div className="h-14 w-14 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                   <span className="text-2xl font-black">#</span>
@@ -263,7 +284,7 @@ export default function ViewOrderModal({ order: initialOrder }: { order: any }) 
             </div>
 
             {/* Sticky Manifest Aggregate Footer */}
-            <div className="p-10 border-t border-gray-100 bg-white flex justify-between items-center">
+            <div className="p-10 border-t border-gray-100 bg-white flex justify-between items-center print:hidden">
                <div className="flex items-center gap-4">
                   <div className="h-12 w-12 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-blue-600 shadow-sm">
                      <CreditCard className="h-6 w-6" />
@@ -280,8 +301,115 @@ export default function ViewOrderModal({ order: initialOrder }: { order: any }) 
             </div>
 
           </div>
+
+          {/* Hidden Print Layout */}
+          <div className="hidden print:block print-invoice bg-white text-black font-mono w-full max-w-3xl mx-auto p-8">
+            <div className="relative text-center space-y-1 mb-6">
+              <div className="absolute top-0 left-0">
+                 <img src="/logo.png" alt="KDS Logo" className="h-16 w-16 object-contain filter grayscale" />
+              </div>
+              <h1 className="text-2xl font-black tracking-widest uppercase ml-16">KDS Garment</h1>
+              <p className="text-sm ml-16">Lalgadh, Nepal</p>
+              <p className="text-xs text-gray-500 mt-2">Copy: 1 | Printed: {new Date().toLocaleString()}</p>
+            </div>
+
+            <div className="border-t-2 border-black my-4" />
+
+            <h2 className="text-center text-xl tracking-[0.2em] mb-6">ESTIMATED BILL</h2>
+
+            <div className="bg-gray-100 p-4 flex justify-between text-sm mb-6">
+              <div className="space-y-1">
+                 <p><span className="font-bold">Bill To:</span> {customerName}</p>
+                 <p><span className="font-bold">Phone:</span> {customerPhone}</p>
+              </div>
+              <div className="text-right space-y-1">
+                 <p><span className="font-bold">Bill #:</span> {order.tracking_id || order.id.slice(0,8).toUpperCase()}</p>
+                 <p><span className="font-bold">Date:</span> {new Date(order.created_at).toLocaleDateString('en-CA')}</p>
+              </div>
+            </div>
+
+            <table className="w-full text-sm text-left mb-6 border-collapse">
+              <thead className="bg-[#4a4a4a] text-white">
+                <tr>
+                  <th className="py-2 px-3 font-bold">Description</th>
+                  <th className="py-2 px-3 font-bold text-center">Qty</th>
+                  <th className="py-2 px-3 font-bold text-right">Rate</th>
+                  <th className="py-2 px-3 font-bold text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.length === 0 ? (
+                   <tr>
+                     <td colSpan={4} className="py-4 text-center italic">No items found</td>
+                   </tr>
+                ) : items.map((item, i) => {
+                  const stockName = item.products?.name || item.name || 'Stock Item';
+                  const rate = item.price || item.products?.price || 0;
+                  const qty = item.quantity || 0;
+                  const subtotal = rate * qty;
+                  return (
+                    <tr key={i} className="border-b border-gray-200">
+                       <td className="py-3 px-3">{stockName}</td>
+                       <td className="py-3 px-3 text-center">{qty}</td>
+                       <td className="py-3 px-3 text-right">Rs. {rate.toFixed(2)}</td>
+                       <td className="py-3 px-3 text-right">Rs. {subtotal.toFixed(2)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+
+            <div className="flex justify-end mb-6 text-sm">
+              <div className="w-64 space-y-2">
+                <div className="flex justify-between border-b-2 border-black pb-2 font-black text-base">
+                  <span>Total:</span>
+                  <span>Rs. {totalAmount.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-100 p-4 text-sm mb-6">
+               <span className="font-bold">Amount in words:</span> {numberToWords(totalAmount)}
+            </div>
+
+            <div className="text-sm mb-10 space-y-1">
+               <p className="font-bold">Payment Method:</p>
+               <p>• {order.payment_method?.toUpperCase() || 'ONLINE'}: Rs. {totalAmount.toFixed(2)}</p>
+            </div>
+
+            <div className="flex justify-between text-sm border-t border-gray-300 pt-4 mb-8">
+               <p><span className="font-bold">Cashier:</span> Admin</p>
+               <p><span className="font-bold">Items:</span> {items.length}</p>
+            </div>
+
+            <div className="text-center text-xs italic text-gray-500 space-y-1 pb-4">
+               <p>Thank you for visiting us!</p>
+               <p className="not-italic">KDS Garment • Lalgadh • Tel: +977 9855073550</p>
+            </div>
+          </div>
         </div>
       )}
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .print-invoice, .print-invoice * {
+            visibility: visible !important;
+          }
+          .fixed {
+             position: absolute !important;
+             left: 0 !important;
+             top: 0 !important;
+             background: white !important;
+             padding: 0 !important;
+             margin: 0 !important;
+          }
+          .max-w-5xl {
+             max-width: 100% !important;
+          }
+        }
+      `}</style>
     </>
   )
 }

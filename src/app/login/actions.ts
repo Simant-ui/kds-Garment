@@ -11,6 +11,7 @@ export async function loginAction(email: string, pass: string) {
   if (email === adminEmail && pass === adminPass) {
     const cookieStore = await cookies()
     cookieStore.set("admin_session", "true", { httpOnly: true, secure: true })
+    cookieStore.set("staff_name", "System Admin", { secure: true })
     return { success: true, redirectTo: "/admin" }
   }
 
@@ -26,6 +27,8 @@ export async function loginAction(email: string, pass: string) {
   if (staff && staff.password === pass) {
     const cookieStore = await cookies()
     cookieStore.set("admin_session", "true", { httpOnly: true, secure: true })
+    cookieStore.set("staff_name", staff.full_name, { secure: true })
+    cookieStore.set("staff_id", staff.id, { secure: true })
     return { success: true, redirectTo: "/admin" }
   }
 
@@ -45,7 +48,12 @@ export async function loginAction(email: string, pass: string) {
 export async function adminLogoutAction() {
   const cookieStore = await cookies()
   cookieStore.delete("admin_session")
+  cookieStore.delete("staff_name")
+  cookieStore.delete("staff_id")
   
   const supabase = await createClient()
   await supabase.auth.signOut()
+  
+  const { redirect } = await import("next/navigation")
+  redirect("/login")
 }
