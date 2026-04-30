@@ -28,7 +28,6 @@ export async function createStaffAction(formData: FormData) {
     .from('staff')
     .insert([{ 
       full_name: `${first_name} ${last_name}`,
-      phone, 
       email, 
       password,
       role: 'staff',
