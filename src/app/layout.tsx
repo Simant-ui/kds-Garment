@@ -21,6 +21,7 @@ export const metadata: Metadata = {
   description: "KDS Readymade Udhyog is the best garment company in Nepal, located near Bardibas, Mahottari. Specializing in high-quality uniforms and corporate wear in the Terai region.",
   keywords: [
     "Best garment company in Nepal", 
+    "best garment in nepal",
     "Garment near Bardibas", 
     "Garment near Mahottari", 
     "Garment manufacturer in Terai",
@@ -28,6 +29,11 @@ export const metadata: Metadata = {
     "School Uniforms Nepal", 
     "Corporate Wear Nepal", 
     "KDS Garment", 
+    "kds garment",
+    "KDS Readymade Udhyog",
+    "kds readymade udhyog",
+    "kkdsreadymadeudhyog",
+    "garment in nepal",
     "Lalgadh Garment Factory"
   ],
   authors: [{ name: "KDS Readymade Udhyog" }],

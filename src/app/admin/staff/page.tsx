@@ -181,7 +181,7 @@ export default async function AdminStaffPage() {
                                 {staff.first_name?.[0] || staff.full_name?.[0]}
                               </div>
                               <div>
-                                <h4 className="text-sm font-bold text-gray-900">{staff.first_name} {staff.last_name}</h4>
+                                <h4 className="text-sm font-bold text-gray-900">{staff.full_name || 'Unnamed Staff'}</h4>
                                 <p className="text-[11px] text-gray-400 font-medium">{staff.email}</p>
                               </div>
                             </div>
