@@ -147,9 +147,9 @@ export default async function Home() {
             />
           </div>
           <div className="p-12 md:p-20 flex flex-col justify-center space-y-8 text-white">
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">WE BUILD <span className="text-[#FCB800]">TRUST</span> WITH EVERY STITCH</h2>
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight">THE LEADING <span className="text-[#FCB800]">CLOTHING FACTORY</span> IN BARDIBAS</h2>
             <p className="text-white leading-loose">
-              KDS Garment Industries has been at the forefront of textile manufacturing in Nepal since 2018. We combine traditional craftsmanship with modern technology to deliver products that meet international standards.
+              Established in 2018, KDS Readymade Udhyog has become the best garment company in Nepal, specifically serving the Mahottari and Terai regions. We combine traditional craftsmanship with modern technology to deliver products that meet international standards.
             </p>
             <div className="grid grid-cols-2 gap-8 pt-4">
               <div className="space-y-2">

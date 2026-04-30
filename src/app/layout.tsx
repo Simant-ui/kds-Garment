@@ -15,11 +15,21 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "KDS Readymade Udhyog | Nepal's Premier Garment Manufacturer",
+    default: "Best Garment Company in Nepal | KDS Readymade Udhyog Bardibas",
     template: "%s | KDS Readymade Udhyog",
   },
-  description: "Nepal's leading garment manufacturer specializing in corporate wear, school uniforms, and high-quality custom apparel. Quality you can trust since 2018.",
-  keywords: ["Garment Manufacturer Nepal", "School Uniforms Nepal", "Corporate Wear Nepal", "Custom T-shirts Nepal", "KDS Garment", "Lalgadh Garment Factory", "Wholesale Clothing Nepal", "Nepal Textiles"],
+  description: "KDS Readymade Udhyog is the best garment company in Nepal, located near Bardibas, Mahottari. Specializing in high-quality uniforms and corporate wear in the Terai region.",
+  keywords: [
+    "Best garment company in Nepal", 
+    "Garment near Bardibas", 
+    "Garment near Mahottari", 
+    "Garment manufacturer in Terai",
+    "Clothing factory Mahottari",
+    "School Uniforms Nepal", 
+    "Corporate Wear Nepal", 
+    "KDS Garment", 
+    "Lalgadh Garment Factory"
+  ],
   authors: [{ name: "KDS Readymade Udhyog" }],
   creator: "KDS Readymade Udhyog",
   publisher: "KDS Readymade Udhyog",
@@ -33,8 +43,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "KDS Readymade Udhyog | Nepal's Premier Garment Manufacturer",
-    description: "High-quality corporate wear, school uniforms, and custom garments delivered across Nepal. Established in 2018.",
+    title: "Best Garment Company in Nepal | KDS Readymade Udhyog Mahottari",
+    description: "Looking for a garment near Bardibas or Mahottari? KDS Readymade Udhyog is the premier choice for custom apparel in the Terai region of Nepal.",
     url: "https://kdsreadymadeudhyog.com.np",
     siteName: "KDS Readymade Udhyog",
     images: [
@@ -50,8 +60,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KDS Readymade Udhyog | Nepal's Premier Garment Manufacturer",
-    description: "Nepal's leading garment manufacturer specializing in corporate wear, school uniforms, and custom apparel.",
+    title: "Best Garment Company in Nepal | KDS Bardibas",
+    description: "Premier garment manufacturer near Bardibas and Mahottari. High-quality custom clothing in Terai, Nepal.",
     images: ["/logo.png"],
   },
   robots: {

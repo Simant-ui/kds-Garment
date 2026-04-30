@@ -2,24 +2,35 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 
 export async function createStaffAction(formData: FormData) {
-  const full_name = formData.get("full_name") as string
+  const first_name = formData.get("first_name") as string
+  const last_name = formData.get("last_name") as string
+  const phone = formData.get("phone") as string
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  const confirm_password = formData.get("confirm_password") as string
 
-  if (!full_name || !email || !password) {
-    return { success: false, error: "All fields are required" }
+  if (!first_name || !last_name || !phone || !email || !password || !confirm_password) {
+    return { error: "All fields are required" }
+  }
+
+  if (password !== confirm_password) {
+    return { error: "Passwords do not match" }
   }
 
   const supabase = await createClient()
 
-  // Note: In a production app, password should be hashed.
-  // Using plain text for now as per simple setup, but highly recommended to hash.
+  // In this implementation, we store staff in a dedicated table for admin panel access.
+  // Note: For real-world production, you should hash the password or use Supabase Auth.
   const { error } = await supabase
     .from('staff')
     .insert([{ 
-      full_name, 
+      first_name,
+      last_name,
+      full_name: `${first_name} ${last_name}`,
+      phone, 
       email, 
       password,
       role: 'staff',
@@ -28,7 +39,7 @@ export async function createStaffAction(formData: FormData) {
 
   if (error) {
     console.error("Staff creation error:", error)
-    return { success: false, error: error.message }
+    return { error: error.message }
   }
 
   revalidatePath("/admin/staff")
@@ -39,7 +50,7 @@ export async function deleteStaffAction(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('staff').delete().eq('id', id)
 
-  if (error) return { success: false, error: error.message }
+  if (error) return { error: error.message }
   
   revalidatePath("/admin/staff")
   return { success: true }

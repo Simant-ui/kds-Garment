@@ -41,13 +41,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-[#F0F2F5] flex font-sans selection:bg-blue-600 selection:text-white">
       {/* Sidebar */}
-      <aside className="w-72 bg-[#1E3A8A] text-white flex flex-col sticky top-0 h-screen z-50 shadow-xl overflow-hidden">
+      <aside className="w-72 bg-[#1E3A8A] text-white flex flex-col sticky top-0 h-screen z-50 shadow-xl overflow-y-auto custom-scrollbar">
         <div className="p-8">
           <Link href="/admin" className="flex items-center gap-3 group">
              <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg">
                 <img src="/logo.png" alt="KDS Logo" className="h-full w-full object-contain" />
              </div>
-             <span className="text-2xl font-bold tracking-tight text-white">KDS <span className="text-[#60A5FA]">Garment</span></span>
+             <span className="text-2xl font-bold tracking-tight text-white uppercase">KDS <span className="text-[#60A5FA]">READYMADE UDHYOG</span></span>
           </Link>
         </div>
 

@@ -1,22 +1,71 @@
 "use client"
 
-import { useState } from "react"
-import { X, User, Phone, Mail, MapPin, Calendar, Hash, ShoppingBag, MessageSquare, Eye, Printer } from "lucide-react"
-import { formatPrice } from "@/lib/utils"
-import { printDocument } from "@/lib/export-utils"
+import { useState, useEffect } from "react"
+import { X, Printer, Eye, Loader2, Image as ImageIcon, CreditCard, RefreshCw } from "lucide-react"
+import { formatPrice, cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
-export default function ViewOrderModal({ order }: { order: any }) {
+export default function ViewOrderModal({ order: initialOrder }: { order: any }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [order, setOrder] = useState(initialOrder)
+  const [items, setItems] = useState<any[]>(initialOrder?.order_items || [])
+  const [isLoadingItems, setIsLoadingItems] = useState(false)
+  
+  const supabase = createClient()
+  const router = useRouter()
 
-  const handlePrint = () => {
-    printDocument()
+  const fetchOrderItems = async () => {
+    setIsLoadingItems(true)
+    try {
+      // Fetch fresh items with product enrichment
+      const { data: rawItems, error: itemsError } = await supabase
+        .from('order_items')
+        .select(`
+           *,
+           products (
+             name,
+             image_url,
+             price
+           )
+        `)
+        .eq('order_id', order.id)
+      
+      if (itemsError) throw itemsError
+      
+      if (rawItems && rawItems.length > 0) {
+        setItems(rawItems)
+      } else {
+        // Fallback for manual bills or older records
+        const { data: fallbackItems } = await supabase
+          .from('order_items')
+          .select('*')
+          .eq('order_id', order.id)
+        
+        if (fallbackItems) setItems(fallbackItems)
+      }
+    } catch (err: any) {
+      console.error("Order Sync Error:", err)
+    } finally {
+      setIsLoadingItems(false)
+    }
   }
 
-  // Extract address and note if they were combined
-  const rawAddress = order.address || ""
-  const addressParts = rawAddress.split(" | Note: ")
+  // Trigger fetch every time modal opens to ensure data is fresh
+  useEffect(() => {
+    if (isOpen) {
+      fetchOrderItems()
+    }
+  }, [isOpen])
+
+  const customerName = order.customer_name || order.full_name || "N/A"
+  const customerPhone = order.customer_phone || order.phone || "N/A"
+  const customerEmail = order.customer_email || order.email || "N/A"
+  const shippingAddress = order.shipping_address || order.address || "N/A"
+  const totalAmount = order.total_amount || order.total_price || 0
+  
+  const addressParts = shippingAddress.split(" | Note: ")
   const displayAddress = addressParts[0] || "N/A"
-  const displayNote = addressParts[1] || "No additional instructions provided."
 
   return (
     <>
@@ -28,206 +77,208 @@ export default function ViewOrderModal({ order }: { order: any }) {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]">
-            {/* Modal Header */}
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 print:hidden">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                   <Hash className="h-6 w-6" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[95vh]">
+            
+            {/* Header Section */}
+            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white">
+              <div className="flex items-center gap-6">
+                <div className="h-14 w-14 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                  <span className="text-2xl font-black">#</span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Order {order.tracking_id || `#${order.id.slice(0,8).toUpperCase()}`}
-                  </h2>
-                  <p className="text-xs text-gray-400 font-medium">Customer Manifest Record</p>
+                   <h2 className="text-2xl font-black text-gray-900 tracking-tight">Order {order.tracking_id || order.id.slice(0,8).toUpperCase()}</h2>
+                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Customer Manifest Record</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={handlePrint}
-                  className="h-10 px-4 flex items-center gap-2 bg-white text-gray-700 rounded-lg transition-all border border-gray-200 hover:bg-gray-50 font-bold text-xs"
-                >
-                  <Printer className="h-4 w-4" /> Print Invoice
-                </button>
-                <button onClick={() => setIsOpen(false)} className="h-10 w-10 flex items-center justify-center hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-200">
-                  <X className="h-5 w-5 text-gray-400" />
-                </button>
+              <div className="flex items-center gap-4">
+                 <button 
+                   onClick={fetchOrderItems}
+                   className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                   title="Refresh Items"
+                 >
+                    <RefreshCw className={cn("h-5 w-5", isLoadingItems && "animate-spin")} />
+                 </button>
+                 <button 
+                   onClick={() => window.print()}
+                   className="flex items-center gap-2 px-6 py-2.5 border-2 border-gray-900 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all"
+                 >
+                    <Printer className="h-4 w-4" /> Print Invoice
+                 </button>
+                 <button onClick={() => setIsOpen(false)} className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-all">
+                    <X className="h-6 w-6 text-gray-400" />
+                 </button>
               </div>
             </div>
 
-            <style jsx global>{`
-              @media print {
-                body * {
-                  visibility: hidden;
-                }
-                .print-content, .print-content * {
-                  visibility: visible;
-                }
-                .print-content {
-                  position: absolute;
-                  left: 0;
-                  top: 0;
-                  width: 100%;
-                }
-                .print-hidden {
-                  display: none !important;
-                }
-              }
-            `}</style>
-
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-10 space-y-10 print-content bg-white">
-              {/* Print Header (Only visible on print) */}
-              <div className="hidden print:flex flex-col items-center justify-center mb-10 border-b-2 border-gray-900 pb-8">
-                 <div className="h-20 w-20 mb-4">
-                    <img src="/logo.png" alt="KDS Logo" className="h-full w-full object-contain" />
-                 </div>
-                 <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">KDS Garment Industry</h1>
-                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Lalgadh, Nepal | Phone: 9855073550 | Email: kdsgroup98@gmail.com</p>
-                 <div className="mt-6 px-8 py-2 bg-gray-900 text-white font-bold text-sm rounded-full uppercase tracking-[0.3em]">Official Invoice</div>
-              </div>
-
-              {/* Order Metadata */}
-              <div className="grid grid-cols-2 gap-8 print:gap-12">
-                 <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Invoice Number</p>
-                    <p className="text-lg font-black text-gray-900 uppercase">{order.tracking_id || `#${order.id.slice(0,8).toUpperCase()}`}</p>
-                 </div>
-                 <div className="text-right space-y-1">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date & Time</p>
-                    <p className="text-sm font-bold text-gray-900">{new Date(order.created_at).toLocaleString()}</p>
-                 </div>
-              </div>
-
-              <div className="h-px bg-gray-100 print:bg-gray-300 w-full" />
-
-              {/* Customer & Info Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 print:grid-cols-2">
-                <div className="space-y-4">
-                  <h3 className="text-[11px] font-bold text-blue-600 print:text-gray-900 uppercase tracking-widest border-b border-gray-100 print:border-gray-300 pb-2">Billing Information</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Customer Name</p>
-                      <p className="text-sm font-bold text-gray-900">{order.full_name || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Contact Number</p>
-                      <p className="text-sm font-bold text-gray-900">{order.phone || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email Address</p>
-                      <p className="text-sm font-bold text-gray-900">{order.email || 'N/A'}</p>
-                    </div>
+            <div className="flex-1 overflow-y-auto p-10 lg:p-14 space-y-16">
+               
+               {/* Invoice Info Grid */}
+               <div className="grid grid-cols-2 gap-10">
+                  <div>
+                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Invoice Number</p>
+                     <h3 className="text-3xl font-black text-gray-900 tracking-tighter">{order.tracking_id || order.id.slice(0,8).toUpperCase()}</h3>
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-[11px] font-bold text-blue-600 print:text-gray-900 uppercase tracking-widest border-b border-gray-100 print:border-gray-300 pb-2">Shipping Details</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Delivery Address</p>
-                      <p className="text-sm font-bold text-gray-900 leading-relaxed">{displayAddress}</p>
-                      {order.landmark && <p className="text-[10px] text-blue-600 print:text-gray-900 mt-1 font-bold italic">Near: {order.landmark}</p>}
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Payment Method</p>
-                      <p className="text-sm font-bold text-gray-900 uppercase">{order.payment_method || 'Cash on Delivery'}</p>
-                    </div>
+                  <div className="text-right">
+                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Date & Time</p>
+                     <p className="text-sm font-black text-gray-900 uppercase tracking-widest">{new Date(order.created_at).toLocaleString()}</p>
                   </div>
-                </div>
-              </div>
+               </div>
 
-              {/* Order Items Table */}
-              <div className="space-y-4">
-                <h3 className="text-[11px] font-bold text-blue-600 print:text-gray-900 uppercase tracking-widest border-b border-gray-100 print:border-gray-300 pb-2">Itemized List</h3>
-                <div className="bg-white rounded-2xl border border-gray-100 print:border-gray-300 overflow-hidden">
+               {/* Billing & Shipping Grid */}
+               <div className="grid grid-cols-2 gap-10">
+                  <div className="space-y-8">
+                     <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] pb-2 border-b border-blue-50">Billing Information</p>
+                     <div className="space-y-4">
+                        <div>
+                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Customer Name</p>
+                           <p className="text-sm font-black text-gray-900 uppercase">{customerName}</p>
+                        </div>
+                        <div>
+                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Contact Number</p>
+                           <p className="text-sm font-black text-gray-900 uppercase">{customerPhone}</p>
+                        </div>
+                        <div>
+                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Email Address</p>
+                           <p className="text-sm font-black text-gray-900 uppercase">{customerEmail}</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="space-y-8">
+                     <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] pb-2 border-b border-blue-50">Shipping Details</p>
+                     <div className="space-y-4">
+                        <div>
+                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Delivery Address</p>
+                           <p className="text-sm font-black text-gray-900 uppercase">{displayAddress}</p>
+                           {order.landmark && <p className="text-[10px] font-bold text-blue-500 italic mt-1">Near: {order.landmark}</p>}
+                        </div>
+                        <div>
+                           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Payment Method</p>
+                           <p className="text-sm font-black text-gray-900 uppercase">{order.payment_method || 'COD'}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Itemized List Table */}
+               <div className="space-y-6">
+                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] pb-2 border-b border-blue-50">Itemized List</p>
                   <table className="w-full text-left">
-                    <thead className="bg-gray-50 print:bg-gray-100 border-b border-gray-100 print:border-gray-300">
-                      <tr>
-                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 print:text-gray-900 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 print:text-gray-900 uppercase tracking-wider text-center">Size</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 print:text-gray-900 uppercase tracking-wider text-center">Qty</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 print:text-gray-900 uppercase tracking-wider text-right">Unit Price</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 print:text-gray-900 uppercase tracking-wider text-right">Subtotal</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 print:divide-gray-300">
-                      {order.order_items?.map((item: any) => (
-                        <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="px-6 py-4">
-                            <span className="font-bold text-gray-900 text-xs">{item.products?.name}</span>
-                            <p className="text-[9px] text-gray-400 font-medium uppercase mt-0.5">{item.color}</p>
-                          </td>
-                          <td className="px-6 py-4 text-center font-bold text-gray-900 text-xs">{item.size}</td>
-                          <td className="px-6 py-4 text-center font-bold text-gray-900 text-xs">x{item.quantity}</td>
-                          <td className="px-6 py-4 text-right font-bold text-gray-900 text-xs">{formatPrice(item.price)}</td>
-                          <td className="px-6 py-4 text-right font-bold text-gray-900 text-xs">{formatPrice(item.price * item.quantity)}</td>
+                     <thead>
+                        <tr className="border-b border-gray-100">
+                           <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description (Stock Name)</th>
+                           <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Size</th>
+                           <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Qty</th>
+                           <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Rate / Pcs</th>
+                           <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Subtotal</th>
                         </tr>
-                      ))}
-                    </tbody>
+                     </thead>
+                     <tbody className="divide-y divide-gray-50">
+                        {isLoadingItems ? (
+                           <tr>
+                              <td colSpan={5} className="py-20 text-center">
+                                 <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto" />
+                              </td>
+                           </tr>
+                        ) : items.length > 0 ? (
+                           items.map((item, idx) => {
+                              const stockName = item.products?.name || item.name || 'Stock Item';
+                              const rate = item.price || item.products?.price || 0;
+                              const qty = item.quantity || 0;
+                              const subtotal = rate * qty;
+
+                              return (
+                                 <tr key={idx} className="group">
+                                    <td className="py-8">
+                                       <div className="flex items-center gap-4">
+                                          <div className="h-12 w-12 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 shrink-0">
+                                             {item.products?.image_url ? (
+                                                <img src={item.products.image_url} alt="p" className="h-full w-full object-cover" />
+                                             ) : (
+                                                <div className="h-full w-full flex items-center justify-center text-gray-200">
+                                                   <ImageIcon className="h-5 w-5" />
+                                                </div>
+                                             )}
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-black text-gray-900 uppercase leading-tight">{stockName}</p>
+                                             <p className="text-[10px] font-bold text-emerald-600 uppercase mt-1">{item.color || 'Default'}</p>
+                                          </div>
+                                       </div>
+                                    </td>
+                                    <td className="py-8 text-center text-sm font-black text-gray-900 uppercase">{item.size || 'N/A'}</td>
+                                    <td className="py-8 text-center text-sm font-black text-gray-900 uppercase">{qty}</td>
+                                    <td className="py-8 text-center text-sm font-black text-gray-900 uppercase">{formatPrice(rate)}</td>
+                                    <td className="py-8 text-right text-sm font-black text-gray-900 uppercase">{formatPrice(subtotal)}</td>
+                                 </tr>
+                              );
+                           })
+                        ) : (
+                           <tr>
+                              <td colSpan={5} className="py-20 text-center text-gray-400 font-bold uppercase text-[10px] tracking-widest">NO RECORDS FOUND.</td>
+                           </tr>
+                        )}
+                     </tbody>
                   </table>
-                </div>
-              </div>
+               </div>
 
-              {/* Calculations & Signatures */}
-              <div className="flex justify-between items-end gap-20 pt-10">
-                 <div className="flex-1 space-y-12">
-                    <div className="space-y-4">
-                       <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Special Notes</h4>
-                       <p className="text-xs text-gray-500 italic max-w-sm border-l-2 border-gray-100 pl-4 py-1">
-                          {displayNote === "No additional instructions provided." ? "Thank you for shopping with KDS Garment. Goods once sold are not returnable under normal conditions." : displayNote}
-                       </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-10">
-                       <div className="border-t border-gray-900 pt-3 text-center">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-900">Authorized Signature</p>
-                       </div>
-                       <div className="border-t border-gray-900 pt-3 text-center">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-900">Processed By: Admin</p>
-                       </div>
-                    </div>
-                 </div>
+               {/* Special Notes & Signatures Section */}
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
+                  <div className="lg:col-span-8 space-y-12">
+                     <div className="space-y-4">
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Special Notes</p>
+                        <p className="text-xs font-bold text-gray-500 italic max-w-md leading-loose">
+                           Thank you for shopping with KDS Garment. Goods once sold are not returnable under normal conditions.
+                        </p>
+                     </div>
+                     <div className="grid grid-cols-2 gap-10 pt-10">
+                        <div className="border-t border-gray-900 pt-4">
+                           <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Authorized Signature</p>
+                        </div>
+                        <div className="border-t border-gray-900 pt-4">
+                           <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Processed By: Admin</p>
+                        </div>
+                     </div>
+                  </div>
 
-                 <div className="w-72 bg-gray-50 print:bg-white print:border print:border-gray-300 p-8 rounded-3xl space-y-4">
-                    <div className="flex justify-between items-center text-xs">
-                       <span className="text-gray-400 font-bold uppercase">Subtotal</span>
-                       <span className="text-gray-900 font-bold">{formatPrice(order.total_price)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                       <span className="text-gray-400 font-bold uppercase">Tax (0%)</span>
-                       <span className="text-gray-900 font-bold">रू 0</span>
-                    </div>
-                    <div className="h-px bg-gray-200" />
-                    <div className="flex justify-between items-center">
-                       <span className="text-xs font-black text-gray-900 uppercase">Grand Total</span>
-                       <span className="text-xl font-black text-blue-600 print:text-gray-900">{formatPrice(order.total_price)}</span>
-                    </div>
-                 </div>
-              </div>
-
-              {/* Print Footer */}
-              <div className="hidden print:block text-center pt-20">
-                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.5em]">--- End of Invoice ---</p>
-                 <p className="text-[8px] text-gray-300 mt-4 italic font-medium">Generated automatically by KDS Garment ERP System on {new Date().toLocaleString()}</p>
-              </div>
+                  <div className="lg:col-span-4">
+                     <div className="bg-gray-50 rounded-3xl p-8 space-y-4 border border-gray-100">
+                        <div className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                           <span>Subtotal</span>
+                           <span className="text-gray-900 font-black">{formatPrice(totalAmount)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                           <span>Tax (0%)</span>
+                           <span className="text-gray-900 font-black">रू 0.00</span>
+                        </div>
+                        <div className="h-px bg-gray-200 my-4" />
+                        <div className="flex justify-between items-center">
+                           <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Grand Total</span>
+                           <span className="text-2xl font-black text-blue-600">{formatPrice(totalAmount)}</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex justify-between items-center mt-auto print:hidden">
+            {/* Sticky Manifest Aggregate Footer */}
+            <div className="p-10 border-t border-gray-100 bg-white flex justify-between items-center">
                <div className="flex items-center gap-4">
-                 <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-blue-600 border border-gray-200 shadow-sm"><ShoppingBag className="h-6 w-6" /></div>
-                 <div>
-                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Payment Status</p>
-                   <p className="text-sm font-bold text-gray-900 uppercase">{order.payment_method || 'COD'}</p>
-                 </div>
+                  <div className="h-12 w-12 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-blue-600 shadow-sm">
+                     <CreditCard className="h-6 w-6" />
+                  </div>
+                  <div>
+                     <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Payment Status</p>
+                     <p className="text-sm font-black text-gray-900 uppercase">{order.status === 'delivered' ? 'PAID' : 'ONLINE'}</p>
+                  </div>
                </div>
                <div className="text-right">
-                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Manifest Aggregate</p>
-                 <p className="text-3xl font-bold text-gray-900">{formatPrice(order.total_price)}</p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Manifest Aggregate</p>
+                  <p className="text-5xl font-black text-gray-900 tracking-tighter">{formatPrice(totalAmount)}</p>
                </div>
             </div>
+
           </div>
         </div>
       )}

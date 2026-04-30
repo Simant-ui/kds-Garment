@@ -102,11 +102,11 @@ export default function BillingPage() {
         .from('orders')
         .insert({
           tracking_id: invoiceNumber,
-          full_name: customer.name || 'Walk-in Customer',
-          phone: customer.phone || '',
-          total_price: total,
+          customer_name: customer.name || 'Walk-in Customer',
+          customer_phone: customer.phone || '',
+          total_amount: total,
           status: 'delivered', // POS sales are immediate
-          address: 'POS Counter Sale',
+          shipping_address: 'POS Counter Sale',
           payment_method: paymentMethod
         })
         .select()
@@ -126,7 +126,10 @@ export default function BillingPage() {
         .from('order_items')
         .insert(orderItems)
 
-      if (itemsError) throw itemsError
+      if (itemsError) {
+        alert("POS ERROR: Failed to save bill items! " + itemsError.message)
+        throw itemsError
+      }
 
       // 3. Update Inventory (Subtract stock)
       for (const item of cart) {
@@ -305,6 +308,19 @@ export default function BillingPage() {
                        />
                     </div>
                  </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Processed By (Staff)</label>
+                    <div className="relative">
+                      <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
+                      <input 
+                        type="text" 
+                        value={staffName}
+                        onChange={(e) => setStaffName(e.target.value)}
+                        placeholder="Staff Name"
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                      />
+                    </div>
+                  </div>
               </div>
            </div>
 

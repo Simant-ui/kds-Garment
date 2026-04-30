@@ -3,11 +3,20 @@
 import { useCart } from "@/context/CartContext"
 import Link from "next/link"
 import Image from "next/image"
-import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, ShieldCheck, ChevronLeft } from "lucide-react"
+import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, ShieldCheck, ChevronLeft, Truck } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, totalPrice } = useCart()
+
+  // Delivery Charge Logic (Refined: 200g per piece)
+  const SHIPPING_THRESHOLD = 15000
+  const RATE_PER_KG = 200
+  const WEIGHT_PER_ITEM = 0.2 // 200 grams = 0.2kg
+  
+  const totalWeight = cart.reduce((sum, item) => sum + (item.quantity * WEIGHT_PER_ITEM), 0)
+  const deliveryCharge = totalPrice >= SHIPPING_THRESHOLD ? 0 : totalWeight * RATE_PER_KG
+  const grandTotal = totalPrice + deliveryCharge
 
   if (cart.length === 0) {
     return (
@@ -121,17 +130,30 @@ export default function CartPage() {
                
                <div className="space-y-8 relative z-10">
                   <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.2em] text-white/40">
-                    <span>SELECTION TOTAL</span>
+                    <span>SUBTOTAL</span>
                     <span className="text-white">{formatPrice(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.2em] text-white/40">
-                    <span>LOGISTICS FEE</span>
-                    <span className="text-[#D4AF37]">COMPLIMENTARY</span>
+                    <span>LOGISTICS ({totalWeight.toFixed(2)}KG)</span>
+                    {deliveryCharge > 0 ? (
+                       <span className="text-white">{formatPrice(deliveryCharge)}</span>
+                    ) : (
+                       <span className="text-[#D4AF37]">FREE SHIPPING</span>
+                    )}
                   </div>
                   
+                  {totalPrice < SHIPPING_THRESHOLD && (
+                     <div className="bg-white/5 p-6 rounded-3xl border border-white/5 flex gap-4 items-center">
+                        <Truck className="h-6 w-6 text-[#D4AF37]" />
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 leading-relaxed">
+                           Add <span className="text-white">{formatPrice(SHIPPING_THRESHOLD - totalPrice)}</span> more for <span className="text-[#D4AF37]">Free Delivery</span>
+                        </p>
+                     </div>
+                  )}
+                  
                   <div className="pt-12 border-t border-white/10 flex flex-col gap-4">
-                    <span className="text-xs font-black uppercase tracking-[0.4em] text-white/30">FINAL BILL</span>
-                    <span className="text-7xl font-black text-white tracking-tighter leading-none">{formatPrice(totalPrice)}</span>
+                    <span className="text-xs font-black uppercase tracking-[0.4em] text-white/30">GRAND TOTAL</span>
+                    <span className="text-7xl font-black text-white tracking-tighter leading-none">{formatPrice(grandTotal)}</span>
                   </div>
                </div>
 

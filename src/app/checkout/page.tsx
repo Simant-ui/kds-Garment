@@ -39,6 +39,14 @@ export default function CheckoutPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  // Delivery Logic (Refined: 200g per piece)
+  const SHIPPING_THRESHOLD = 15000
+  const RATE_PER_KG = 200
+  const WEIGHT_PER_ITEM = 0.2 // 200 grams
+  const totalWeight = cart.reduce((sum, item) => sum + (item.quantity * WEIGHT_PER_ITEM), 0)
+  const deliveryCharge = totalPrice >= SHIPPING_THRESHOLD ? 0 : totalWeight * RATE_PER_KG
+  const grandTotal = totalPrice + deliveryCharge
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(trackingId)
     setCopied(true)
@@ -71,7 +79,7 @@ export default function CheckoutPage() {
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
-        total_amount: totalPrice,
+        total_amount: grandTotal, 
         status: 'pending',
         tracking_id: newTrackingId,
         shipping_address: formData.address + (formData.description ? ` | Note: ${formData.description}` : ""),
@@ -93,7 +101,7 @@ export default function CheckoutPage() {
     // 2. Create order items
     const orderItems = cart.map(item => ({
       order_id: order.id,
-      product_id: item.id || item.product_id,
+      product_id: item.product_id,
       quantity: item.quantity,
       price: item.price,
       size: item.size,
@@ -106,13 +114,14 @@ export default function CheckoutPage() {
 
     if (itemsError) {
       console.error("Error saving items:", itemsError)
+      alert("CRITICAL ERROR: Failed to save order items! " + itemsError.message)
     }
 
     // 3. Log initial history
     await supabase.from('order_history').insert({
       order_id: order.id,
       status: 'pending',
-      note: 'Order placed by customer'
+      note: `Order placed. Subtotal: ${totalPrice}, Weight: ${totalWeight.toFixed(2)}kg, Delivery: ${deliveryCharge}`
     })
 
     setTrackingId(newTrackingId)
@@ -172,7 +181,6 @@ export default function CheckoutPage() {
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-8 space-y-8">
-            {/* Shipping Manifest */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
               <div className="flex items-center gap-4 mb-8 border-b pb-4">
                 <Truck className="h-6 w-6 text-[#FCB800]" />
@@ -211,7 +219,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Registry */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
               <div className="flex items-center gap-4 mb-8 border-b pb-4">
                 <CreditCard className="h-6 w-6 text-[#FCB800]" />
@@ -247,17 +254,21 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-bold mb-8 border-b border-white/10 pb-4 uppercase">Order Summary</h2>
 
               <div className="space-y-4 mb-8">
-                <div className="flex justify-between text-sm opacity-60 font-bold">
+                <div className="flex justify-between text-sm opacity-60 font-bold uppercase tracking-widest">
                   <span>Subtotal</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
-                <div className="flex justify-between text-sm opacity-60 font-bold">
-                  <span>Shipping</span>
-                  <span className="text-[#FCB800]">Free</span>
+                <div className="flex justify-between text-sm opacity-60 font-bold uppercase tracking-widest">
+                  <span>Shipping ({totalWeight.toFixed(2)}KG)</span>
+                  {deliveryCharge > 0 ? (
+                    <span>{formatPrice(deliveryCharge)}</span>
+                  ) : (
+                    <span className="text-[#FCB800]">FREE</span>
+                  )}
                 </div>
                 <div className="pt-4 border-t border-white/10 flex justify-between items-end">
-                  <span className="text-sm font-bold">TOTAL</span>
-                  <span className="text-3xl font-bold text-[#FCB800]">{formatPrice(totalPrice)}</span>
+                  <span className="text-sm font-bold uppercase tracking-widest">TOTAL</span>
+                  <span className="text-3xl font-bold text-[#FCB800]">{formatPrice(grandTotal)}</span>
                 </div>
               </div>
 
@@ -277,7 +288,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="w-full bg-[#FCB800] text-[#002169] h-14 rounded font-bold uppercase hover:bg-yellow-500 transition-all flex items-center justify-center gap-3 shadow-xl">
+              <button type="submit" disabled={loading} className="w-full bg-[#FCB800] text-[#002169] h-14 rounded font-bold uppercase hover:bg-yellow-500 transition-all flex items-center justify-center gap-3 shadow-xl text-xs tracking-widest">
                 {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
                   <>Complete Order <ArrowRight className="h-5 w-5" /></>
                 )}
