@@ -19,7 +19,7 @@ export default function Footer() {
                  />
               </div>
               <span className="text-3xl font-black tracking-tight uppercase">
-                KDS <span className="text-[#FCB800]">GARMENT</span>
+                KDS <span className="text-[#FCB800]">READYMADE UDHYOG</span>
               </span>
             </Link>
             <p className="text-sm text-white/90 leading-relaxed max-w-xs">
@@ -110,7 +110,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-sm text-white/60">
-            &copy; {new Date().getFullYear()} KDS Garment Industries. All rights reserved.
+            &copy; {new Date().getFullYear()} KDS Readymade Udhyog. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
              <Link href="/privacy" className="text-xs text-white/60 hover:text-white transition-colors">Privacy Policy</Link>

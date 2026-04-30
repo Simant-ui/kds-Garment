@@ -94,7 +94,7 @@ export default function Navbar() {
                  />
               </div>
               <span className="text-2xl font-black tracking-tight uppercase">
-                KDS <span className="text-[#FCB800]">GARMENT</span>
+                KDS <span className="text-[#FCB800]">READYMADE UDHYOG</span>
               </span>
             </Link>
 
