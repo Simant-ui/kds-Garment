@@ -24,10 +24,10 @@ export default async function Home() {
                Established in 2018 AD
             </div>
             <h1 className="text-4xl md:text-7xl font-black text-white max-w-2xl leading-tight drop-shadow-2xl">
-              NEPAL'S PREMIER <br /> <span className="text-[#FCB800]">GARMENT MANUFACTURER</span>
+              KDS READYMADE UDHYOG <br /> <span className="text-[#FCB800]">GARMENT MANUFACTURER</span>
             </h1>
             <p className="text-white text-lg md:text-xl max-w-xl font-medium drop-shadow-lg">
-              High-quality corporate wear, school uniforms, and custom garments delivered across Nepal and beyond.
+              KDS Readymade Udhyog is Nepal's premier garment manufacturer providing high-quality corporate wear, school uniforms, and custom apparel delivered across Nepal.
             </p>
             <div className="flex gap-4 pt-4">
               <Link href="/products" className="bg-[#FCB800] text-[#002169] px-8 py-4 rounded font-bold hover:bg-white transition-all flex items-center gap-2">

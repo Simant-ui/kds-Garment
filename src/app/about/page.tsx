@@ -1,6 +1,12 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Star, Quote, Award, Users, ShieldCheck, Factory, CheckCircle2, ArrowRight } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "About KDS Readymade Udhyog",
+  description: "Learn about KDS Readymade Udhyog, Nepal's premier garment manufacturer. Discover our heritage, manufacturing process, and commitment to quality since 2018.",
+}
 
 export default function AboutPage() {
   return (

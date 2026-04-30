@@ -2,6 +2,12 @@ import { getProducts, getCategories } from "@/lib/products"
 import ProductCard from "@/components/ui/ProductCard"
 import { Search, Filter, SlidersHorizontal, ChevronRight, LayoutGrid, List } from "lucide-react"
 import Link from "next/link"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Shop All Products",
+  description: "Browse our collection of corporate wear, school uniforms, and custom garments. High-quality manufacturing at competitive prices in Nepal.",
+}
 
 export default async function ProductsPage({
   searchParams,
