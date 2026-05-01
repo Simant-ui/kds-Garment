@@ -82,7 +82,7 @@ export default function Navbar() {
 
         {/* 🏢 Main Header */}
         <nav className="bg-[#002169] text-white">
-          <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-4 xl:gap-8">
+          <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-2 sm:gap-4 xl:gap-8">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 shrink-0">
               <div className="relative h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
@@ -93,9 +93,14 @@ export default function Navbar() {
                    className="object-cover"
                  />
               </div>
-              <span className="text-2xl font-black tracking-tight uppercase">
-                KDS <span className="text-[#FCB800]">READYMADE UDHYOG</span>
-              </span>
+              <div className="flex flex-col leading-none">
+                <span className="text-lg sm:text-2xl font-black tracking-tighter sm:tracking-tight uppercase">
+                  KDS
+                </span>
+                <span className="text-[8px] sm:text-[10px] font-bold text-[#FCB800] uppercase tracking-[0.2em] sm:tracking-widest">
+                  READYMADE UDHYOG
+                </span>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}

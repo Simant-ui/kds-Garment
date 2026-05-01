@@ -25,8 +25,8 @@ export default function CartPage() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-black blur-[80px] opacity-5" />
           <ShoppingBag className="h-24 w-24 text-black/10 group-hover:text-black transition-all duration-700 transform group-hover:scale-110" />
         </div>
-        <h2 className="text-6xl font-black tracking-tighter uppercase mb-6 text-black">Empty Collection</h2>
-        <p className="text-black/40 mb-12 max-w-sm font-bold uppercase text-[10px] tracking-[0.3em] leading-loose">
+        <h2 className="text-4xl sm:text-6xl font-black tracking-tighter uppercase mb-6 text-black">Empty Collection</h2>
+        <p className="text-black/40 mb-12 max-w-sm font-bold uppercase text-[9px] sm:text-[10px] tracking-[0.3em] leading-loose">
           Your personal gallery is waiting to be filled with our premium garments.
         </p>
         <Link 
@@ -48,7 +48,7 @@ export default function CartPage() {
              <Link href="/products" className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-[#A88B4A] hover:text-black transition-colors">
                 <ChevronLeft className="h-4 w-4" /> Back to Shop
              </Link>
-             <h1 className="text-7xl md:text-9xl font-black tracking-tighter uppercase text-black leading-none">
+             <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter uppercase text-black leading-none">
                 THE <br /> <span className="text-black/20">BAG</span>
              </h1>
           </div>
@@ -76,7 +76,7 @@ export default function CartPage() {
                   <div className="space-y-8">
                     <div className="flex justify-between items-start">
                       <div className="space-y-4">
-                        <h3 className="text-4xl font-black tracking-tighter uppercase text-black leading-tight max-w-sm">{item.name}</h3>
+                        <h3 className="text-2xl md:text-4xl font-black tracking-tighter uppercase text-black leading-tight max-w-sm">{item.name}</h3>
                         <div className="flex flex-wrap items-center gap-4">
                           <div className="bg-white px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest text-black/30 border border-black/5">
                             SIZE: <span className="text-black">{item.size}</span>
@@ -153,7 +153,7 @@ export default function CartPage() {
                   
                   <div className="pt-12 border-t border-white/10 flex flex-col gap-4">
                     <span className="text-xs font-black uppercase tracking-[0.4em] text-white/30">GRAND TOTAL</span>
-                    <span className="text-7xl font-black text-white tracking-tighter leading-none">{formatPrice(grandTotal)}</span>
+                    <span className="text-3xl sm:text-5xl md:text-7xl font-black text-white tracking-tighter leading-none">{formatPrice(grandTotal)}</span>
                   </div>
                </div>
 

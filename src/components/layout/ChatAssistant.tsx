@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { MessageSquare, X, Send, Bot, User, Minimize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -145,7 +146,7 @@ export default function ChatAssistant() {
   }
 
   return (
-    <div className="fixed bottom-8 right-8 z-[100] flex flex-col items-end">
+    <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-[100] flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
         <div className="mb-6 w-[90vw] md:w-[400px] h-[500px] bg-white rounded-[32px] shadow-2xl border border-black/5 overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 fade-in duration-500">
@@ -181,7 +182,26 @@ export default function ChatAssistant() {
                     ? "bg-primary text-white rounded-tr-none shadow-xl shadow-primary/20" 
                     : "bg-white text-black border border-black/5 rounded-tl-none shadow-sm"
                 )}>
-                  {m.content}
+                  {m.content.split('\n').map((line, li) => (
+                    <div key={li}>
+                      {line.split(/(\[.*?\]\(.*?\))/g).map((part, pi) => {
+                        const match = part.match(/\[(.*?)\]\((.*?)\)/)
+                        if (match) {
+                          return (
+                            <Link 
+                              key={pi} 
+                              href={match[2]} 
+                              className="text-white bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg font-bold underline transition-all inline-block my-1"
+                              onClick={() => match[2].startsWith('http') ? null : setIsOpen(false)}
+                            >
+                              {match[1]}
+                            </Link>
+                          )
+                        }
+                        return part
+                      })}
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -224,7 +244,7 @@ export default function ChatAssistant() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "h-16 w-16 bg-primary text-white rounded-[24px] flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all relative group",
+          "h-14 w-14 sm:h-16 sm:w-16 bg-primary text-white rounded-[20px] sm:rounded-[24px] flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all relative group",
           isOpen && "rotate-90"
         )}
       >

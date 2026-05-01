@@ -33,7 +33,7 @@ export default async function CategoriesPage() {
                   <ChevronRight className="h-3 w-3" />
                   <span>Archive</span>
                </div>
-               <h1 className="text-7xl md:text-9xl font-black tracking-tighter uppercase text-black leading-[0.85]">
+               <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter uppercase text-black leading-[0.85]">
                   THE <br /> <span className="text-black/20">ARCHIVE</span>
                </h1>
             </div>
@@ -64,7 +64,7 @@ export default async function CategoriesPage() {
                       <div className="h-1 bg-[#D4AF37] w-12" />
                       <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#D4AF37]">Explore Collection</span>
                    </div>
-                   <h3 className="text-6xl md:text-8xl font-black tracking-tighter uppercase text-white leading-none">
+                   <h3 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter uppercase text-white leading-none">
                       {cat}
                    </h3>
                    <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
@@ -85,7 +85,7 @@ export default async function CategoriesPage() {
           <div className="bg-black rounded-[4rem] p-20 flex flex-col items-center text-center space-y-10 relative overflow-hidden shadow-2xl">
              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(212,175,55,0.05),transparent_70%)]" />
              <Layers className="h-16 w-16 text-[#D4AF37] relative z-10" />
-             <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase text-white relative z-10">Bespoke <br /> Customizations</h2>
+             <h2 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter uppercase text-white relative z-10">Bespoke <br /> Customizations</h2>
              <p className="text-xs font-bold text-white/40 uppercase tracking-[0.4em] max-w-lg relative z-10 leading-loose">
                Looking for something unique? Our master tailors can create any category of garment specifically for your requirements.
              </p>

@@ -24,7 +24,7 @@ export default function AboutPage() {
           {/* Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
              <div className="space-y-8">
-                <h1 className="text-4xl md:text-6xl font-bold text-[#002169] leading-tight uppercase">
+                <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-[#002169] leading-tight uppercase">
                   MANUFACTURING <br /> EXCELLENCE <span className="text-[#FCB800]">SINCE 2018 AD</span>
                 </h1>
                 <p className="text-gray-500 text-sm leading-relaxed max-w-lg">
@@ -84,7 +84,7 @@ export default function AboutPage() {
              
              <div className="space-y-10">
                 <div className="space-y-6">
-                   <h2 className="text-3xl font-bold text-[#002169] uppercase">The KDS Heritage & Manufacturing</h2>
+                   <h2 className="text-2xl sm:text-3xl font-bold text-[#002169] uppercase">The KDS Heritage & Manufacturing</h2>
                    <p className="text-gray-500 text-sm leading-loose">
                      Rooted in Lalgadh, Nepal, KDS Garment stands as a pillar of excellence in modern apparel manufacturing. What began as a dedicated vision to supply durable, premium uniforms for local schools and healthcare institutions has evolved into a full-scale industrial powerhouse. Today, we utilize state-of-the-art fabric sourcing, precision pattern-making, and advanced stitching technologies to produce everything from high-end corporate wear to heavy-duty industrial workwear. 
                    </p>
@@ -118,15 +118,15 @@ export default function AboutPage() {
              <div className="absolute top-0 right-0 w-96 h-96 bg-[#FCB800] blur-[150px] opacity-10" />
              <div className="grid grid-cols-1 md:grid-cols-3 gap-16 text-center relative z-10">
                 <div className="space-y-4">
-                   <span className="text-5xl md:text-6xl font-bold text-[#FCB800]">8+</span>
+                   <span className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#FCB800]">8+</span>
                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">Years in Industry</p>
                 </div>
                 <div className="space-y-4">
-                   <span className="text-5xl md:text-6xl font-bold text-[#FCB800]">1M+</span>
+                   <span className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#FCB800]">1M+</span>
                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">Garments Produced</p>
                 </div>
                 <div className="space-y-4">
-                   <span className="text-5xl md:text-6xl font-bold text-[#FCB800]">100%</span>
+                   <span className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#FCB800]">100%</span>
                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">Quality Satisfaction</p>
                 </div>
              </div>

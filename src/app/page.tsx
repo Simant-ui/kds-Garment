@@ -19,21 +19,21 @@ export default async function Home() {
           className="object-cover brightness-75"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#002169]/90 to-[#002169]/40 flex items-center">
-          <div className="container mx-auto px-6 space-y-6">
+          <div className="container mx-auto px-4 sm:px-6 space-y-4 sm:space-y-6">
             <div className="bg-[#FCB800] text-[#002169] px-4 py-1.5 inline-block rounded font-bold text-xs md:text-sm uppercase tracking-widest shadow-lg">
                Established in 2018 AD
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white max-w-3xl leading-tight drop-shadow-2xl">
-              KDS READYMADE UDHYOG <br /> <span className="text-[#FCB800]">GARMENT MANUFACTURER</span>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white max-w-3xl leading-tight drop-shadow-2xl">
+              KDS READYMADE UDHYOG <br className="hidden sm:block" /> <span className="text-[#FCB800]">GARMENT MANUFACTURER</span>
             </h1>
-            <p className="text-white/90 text-base md:text-lg max-w-xl font-medium drop-shadow-lg leading-relaxed">
+            <p className="text-white/90 text-sm sm:text-base md:text-lg max-w-xl font-medium drop-shadow-lg leading-relaxed">
               KDS Readymade Udhyog is Nepal's premier garment manufacturer providing high-quality corporate wear, school uniforms, and custom apparel delivered across Nepal.
             </p>
-            <div className="flex gap-4 pt-6 flex-wrap">
-              <Link href="/products" className="bg-[#FCB800] text-[#002169] px-6 py-3.5 md:px-8 md:py-4 rounded font-bold hover:bg-white transition-all flex items-center gap-2 shadow-xl hover:-translate-y-1">
-                BROWSE COLLECTION <ArrowRight className="h-5 w-5" />
+            <div className="flex gap-3 pt-4 flex-wrap">
+              <Link href="/products" className="bg-[#FCB800] text-[#002169] px-4 py-3 sm:px-8 sm:py-4 rounded font-bold hover:bg-white transition-all flex items-center gap-2 shadow-xl hover:-translate-y-1 text-xs sm:text-sm">
+                BROWSE COLLECTION <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </Link>
-              <Link href="/about" className="bg-transparent border-2 border-white text-white px-6 py-3.5 md:px-8 md:py-4 rounded font-bold hover:bg-white hover:text-[#002169] transition-all shadow-xl hover:-translate-y-1">
+              <Link href="/about" className="bg-transparent border-2 border-white text-white px-4 py-3 sm:px-8 sm:py-4 rounded font-bold hover:bg-white hover:text-[#002169] transition-all shadow-xl hover:-translate-y-1 text-xs sm:text-sm">
                 OUR STORY
               </Link>
             </div>
@@ -89,7 +89,7 @@ export default async function Home() {
       <section className="container mx-auto px-6 py-20">
         <div className="text-center mb-16">
           <p className="text-[#002169] font-bold text-xs uppercase tracking-[0.3em] mb-2">Our Specialization</p>
-          <h2 className="text-4xl font-bold text-gray-900">TOP CATEGORIES</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">TOP CATEGORIES</h2>
           <div className="h-1 bg-[#FCB800] w-20 mx-auto mt-4" />
         </div>
 
@@ -120,7 +120,7 @@ export default async function Home() {
           <div className="flex items-end justify-between mb-12">
             <div>
               <p className="text-[#002169] font-bold text-xs uppercase tracking-[0.3em] mb-2">Editor's Choice</p>
-              <h2 className="text-4xl font-bold text-gray-900">FEATURED PRODUCTS</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">FEATURED PRODUCTS</h2>
             </div>
             <Link href="/products" className="text-[#002169] font-bold text-sm hover:text-[#FCB800] transition-colors flex items-center gap-2">
               VIEW ALL <ArrowRight className="h-4 w-4" />
@@ -147,7 +147,7 @@ export default async function Home() {
             />
           </div>
           <div className="p-12 md:p-20 flex flex-col justify-center space-y-8 text-white">
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">THE LEADING <span className="text-[#FCB800]">CLOTHING FACTORY</span> IN BARDIBAS</h2>
+            <h2 className="text-3xl md:text-5xl font-bold leading-tight">THE LEADING <span className="text-[#FCB800]">CLOTHING FACTORY</span> IN BARDIBAS</h2>
             <p className="text-white leading-loose">
               Established in 2018, KDS Readymade Udhyog has become the best garment company in Nepal, specifically serving the Mahottari and Terai regions. We combine traditional craftsmanship with modern technology to deliver products that meet international standards.
             </p>

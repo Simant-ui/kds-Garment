@@ -83,6 +83,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5, // Allow zooming for accessibility but ensure initial fit
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -90,10 +96,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
-      <body className="antialiased font-sans">
-        <RootLayoutClient>
-          {children}
-        </RootLayoutClient>
+      <body className="antialiased font-sans relative">
+        <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden">
+          <RootLayoutClient>
+            {children}
+          </RootLayoutClient>
+        </div>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
