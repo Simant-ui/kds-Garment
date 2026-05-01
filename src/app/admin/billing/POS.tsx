@@ -130,8 +130,12 @@ export default function POSPage() {
         .insert({
           tracking_id: invoiceNumber,
           customer_name: customer.name || 'Walk-in Customer',
+          full_name: customer.name || 'Walk-in Customer', // Set both for compatibility
           customer_phone: customer.phone || '',
-          total_amount: total, // Fixed to total_amount
+          phone: customer.phone || '', // Set both for compatibility
+          customer_email: 'pos-sale@kdsgarment.com',
+          total_amount: total,
+          total_price: total, // Set both for compatibility
           status: 'delivered', // POS sales are immediate
           shipping_address: 'POS Counter Sale',
           payment_method: paymentMethod

@@ -50,9 +50,12 @@ export default function BillsHistoryPage() {
   }, [])
 
   const filteredBills = bills.filter(bill => {
-    const matchesSearch = (bill.tracking_id?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                          (bill.full_name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                          (bill.phone?.toLowerCase().includes(searchQuery.toLowerCase()))
+    const search = searchQuery.toLowerCase()
+    const name = (bill.full_name || bill.customer_name || "").toLowerCase()
+    const tracking = (bill.tracking_id || "").toLowerCase()
+    const phone = (bill.phone || bill.customer_phone || "").toLowerCase()
+
+    const matchesSearch = name.includes(search) || tracking.includes(search) || phone.includes(search)
     
     let matchesDate = true;
     const billDate = new Date(bill.created_at).getTime()
@@ -171,10 +174,10 @@ export default function BillsHistoryPage() {
                              <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
                                 <User className="h-4 w-4 text-gray-400" />
                              </div>
-                             <div>
-                                <p className="font-bold text-gray-900 text-sm">{bill.full_name || 'Walk-in Customer'}</p>
-                                <p className="text-[10px] font-medium text-gray-400">{bill.phone || 'No Mobile'}</p>
-                             </div>
+                              <div>
+                                 <p className="font-bold text-gray-900 text-sm">{bill.full_name || bill.customer_name || 'Walk-in Customer'}</p>
+                                 <p className="text-[10px] font-medium text-gray-400">{bill.phone || bill.customer_phone || 'No Mobile'}</p>
+                              </div>
                           </div>
                        </td>
                        <td className="px-8 py-6">
@@ -191,7 +194,7 @@ export default function BillsHistoryPage() {
                           </div>
                        </td>
                        <td className="px-8 py-6 text-right">
-                          <p className="font-black text-gray-900 text-lg">{formatPrice(bill.total_price)}</p>
+                          <p className="font-black text-gray-900 text-lg">{formatPrice(bill.total_price || bill.total_amount)}</p>
                           <span className="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Paid</span>
                        </td>
                        <td className="px-8 py-6 text-right">
@@ -260,11 +263,11 @@ export default function BillsHistoryPage() {
                  </div>
 
                  <div className="grid grid-cols-2 gap-10 py-10 border-y border-gray-100">
-                    <div>
-                       <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Customer Details</p>
-                       <h4 className="text-lg font-bold text-gray-900">{selectedBill.full_name || 'Walk-in Customer'}</h4>
-                       <p className="text-sm text-gray-500 font-medium mt-1">{selectedBill.phone || 'No Mobile'}</p>
-                    </div>
+                     <div>
+                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Customer Details</p>
+                        <h4 className="text-lg font-bold text-gray-900">{selectedBill.full_name || selectedBill.customer_name || 'Walk-in Customer'}</h4>
+                        <p className="text-sm text-gray-500 font-medium mt-1">{selectedBill.phone || selectedBill.customer_phone || 'No Mobile'}</p>
+                     </div>
                     <div className="text-right">
                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Payment Info</p>
                        <p className="text-sm font-bold text-gray-900">Method: <span className="text-blue-600">{selectedBill.payment_method || 'Cash'}</span></p>
@@ -296,7 +299,7 @@ export default function BillsHistoryPage() {
                     <div className="w-72 space-y-4">
                        <div className="flex justify-between items-center">
                           <span className="font-black text-[#1E3A8A] uppercase tracking-widest text-xs">Grand Total</span>
-                          <span className="text-3xl font-black text-gray-900">{formatPrice(selectedBill.total_price)}</span>
+                          <span className="text-3xl font-black text-gray-900">{formatPrice(selectedBill.total_price || selectedBill.total_amount)}</span>
                        </div>
                     </div>
                  </div>
