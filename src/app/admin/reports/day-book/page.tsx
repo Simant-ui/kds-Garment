@@ -35,7 +35,7 @@ export default async function DayBookPage({
     .lte('created_at', `${dateString}T23:59:59Z`)
     .order('created_at', { ascending: true })
 
-  const dayTotal = orders?.reduce((acc, o) => acc + (o.total_price || 0), 0) || 0
+  const dayTotal = orders?.reduce((acc, o) => acc + (o.total_price || o.total_amount || 0), 0) || 0
   const orderCount = orders?.length || 0
 
   return (
@@ -136,11 +136,11 @@ export default async function DayBookPage({
                   <td className="px-10 py-6">
                     <div className="flex items-center gap-3">
                        <div className="h-9 w-9 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 font-bold text-[10px]">
-                          {order.full_name?.[0] || 'C'}
+                          {(order.full_name || order.customer_name)?.[0] || 'C'}
                        </div>
                        <div>
-                          <p className="font-bold text-sm text-gray-900">{order.full_name}</p>
-                          <p className="text-[10px] text-gray-400 font-medium">{order.phone}</p>
+                          <p className="font-bold text-sm text-gray-900">{order.full_name || order.customer_name || 'Walk-in'}</p>
+                          <p className="text-[10px] text-gray-400 font-medium">{order.phone || order.customer_phone || 'No Mobile'}</p>
                        </div>
                     </div>
                   </td>
@@ -159,7 +159,7 @@ export default async function DayBookPage({
                      </div>
                   </td>
                   <td className="px-10 py-6 text-right">
-                    <span className="font-black text-lg text-gray-900">{formatPrice(order.total_price)}</span>
+                    <span className="font-black text-lg text-gray-900">{formatPrice(order.total_price || order.total_amount)}</span>
                   </td>
                 </tr>
               ))}

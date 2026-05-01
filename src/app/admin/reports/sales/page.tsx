@@ -35,13 +35,13 @@ export default async function SalesBookPage({
     .order('created_at', { ascending: false })
 
   if (params.customer) {
-    query = query.ilike('full_name', `%${params.customer}%`)
+    query = query.or(`full_name.ilike.%${params.customer}%,customer_name.ilike.%${params.customer}%`)
   }
 
   const { data: orders } = await query
 
-  const totalRevenue = orders?.reduce((acc, o) => acc + (o.total_price || 0), 0) || 0
-  const uniqueCustomers = new Set(orders?.map(o => o.phone)).size
+  const totalRevenue = orders?.reduce((acc, o) => acc + (o.total_price || o.total_amount || 0), 0) || 0
+  const uniqueCustomers = new Set(orders?.map(o => o.phone || o.customer_phone)).size
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-20">
@@ -132,11 +132,11 @@ export default async function SalesBookPage({
                   <td className="px-10 py-6">
                     <div className="flex items-center gap-4">
                        <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 font-bold text-xs">
-                          {order.full_name?.[0]}
+                          {(order.full_name || order.customer_name || 'W')?.[0]}
                        </div>
                        <div>
-                          <p className="font-bold text-sm text-gray-900">{order.full_name}</p>
-                          <p className="text-[10px] text-gray-400 font-medium">{order.phone}</p>
+                          <p className="font-bold text-sm text-gray-900">{order.full_name || order.customer_name || 'Walk-in'}</p>
+                          <p className="text-[10px] text-gray-400 font-medium">{order.phone || order.customer_phone || 'No Mobile'}</p>
                        </div>
                     </div>
                   </td>
@@ -149,7 +149,7 @@ export default async function SalesBookPage({
                     <span className="font-bold text-gray-600 text-xs">{order.order_items?.length} items</span>
                   </td>
                   <td className="px-10 py-6 text-right font-black text-gray-900 text-lg">
-                    {formatPrice(order.total_price)}
+                    {formatPrice(order.total_price || order.total_amount)}
                   </td>
                 </tr>
               ))}

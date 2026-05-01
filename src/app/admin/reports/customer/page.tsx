@@ -14,7 +14,7 @@ export default async function CustomerReportPage() {
   const customerMap = new Map()
   orders?.forEach(o => {
     const name = o.customer_name || o.full_name || 'Walk-in Customer'
-    const phone = o.phone || 'No Phone'
+    const phone = o.phone || o.customer_phone || 'No Phone'
     const key = `${name}-${phone}`
     
     if (!customerMap.has(key)) {
